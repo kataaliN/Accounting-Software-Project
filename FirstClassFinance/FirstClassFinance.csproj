@@ -5,6 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>FirstClassFinance</RootNamespace>    
+        <UserSecretsId>1ec2ff66-c813-4c7d-b00f-81f2593e4576</UserSecretsId>    
     </PropertyGroup>
 
     <ItemGroup>
@@ -18,6 +19,7 @@
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.7" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="11.0.0-preview.3.26207.106" />
         <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.16.0" />
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
     </ItemGroup>
