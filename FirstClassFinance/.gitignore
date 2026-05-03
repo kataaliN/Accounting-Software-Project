@@ -1,0 +1,36 @@
+# --- Rider / JetBrains ---
+.idea/
+*.sln.iml
+*.idea.iml
+*.user
+*.userosscache
+*.sln.docuser
+*.DotSettings.user
+
+# --- .NET / C# ---
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+Debug/
+Release/
+*.exe
+*.dll
+*.pdb
+*.suo
+appsettings.Development.json
+
+# --- Databases ---
+#*.db
+*.db-shm
+*.db-wal
+# Only ignore .db if you want a completely fresh database on GitHub.
+# If you WANT to include your current seed data, remove the *.db line above.
+
+# --- Frontend / Node ---
+node_modules/
+.DS_Store
+dist/
+
+# --- Docker ---
+.dockerignore
