@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using First_Class_Finance.Models;
-using First_Class_Finance.Services;
-using First_Class_Finance.Interfaces;
+using FirstClassFinance.Models;
+using FirstClassFinance.Services;
+using FirstClassFinance.Interfaces;
 using Microsoft.Extensions.Configuration;
 
-namespace First_Class_Finance.Controllers
+namespace FirstClassFinance.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
