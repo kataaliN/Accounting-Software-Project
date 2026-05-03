@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Account Ledger</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body class="manager-page">
+
+<!-- Waffle Sidebar (role-aware via JS) -->
+<div id="waffleSidebar" class="waffle-sidebar">
+    <div class="waffle-sidebar-header">
+        <span class="waffle-sidebar-title">Navigation</span>
+        <button class="waffle-sidebar-close" id="waffleSidebarClose">&#x2715;</button>
+    </div>
+    <nav class="waffle-nav" id="ledgerNav"></nav>
+    <div class="waffle-sidebar-footer">
+        <span class="waffle-role-badge" id="ledgerRoleBadge">—</span>
+    </div>
+</div>
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+<!-- Profile Dropdown (role-aware) -->
+<div id="profileDropdown" class="profile-dropdown">
+    <div class="profile-dropdown-header">
+        <div class="profile-dropdown-avatar" id="ledgerAvatar">?</div>
+        <div>
+            <div class="profile-dropdown-name"  id="ledgerProfileName">—</div>
+            <div class="profile-dropdown-role"  id="ledgerProfileRole">—</div>
+        </div>
+    </div>
+    <div class="profile-dropdown-divider"></div>
+    <a href="index.html" class="profile-dropdown-item"><span>⎋</span> Logout</a>
+</div>
+
+<!-- Navbar -->
+<header class="navbar">
+    <div class="nav-left">
+        <button class="waffle-btn" id="waffleBtn" data-tooltip="Open navigation menu">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </button>
+        <div class="nav-divider"></div>
+        <div class="nav-brand">
+            <img src="Assets/LogoFirstClass.png" alt="Logo" class="nav-logo">
+            <span class="site-name">First Class <span>Finance</span></span>
+        </div>
+    </div>
+    <div class="nav-right">
+        <div class="profile-trigger" id="profileTrigger" data-tooltip="Account options">
+            <img src="" alt="Profile" class="profile-icon" id="ledgerProfileImg">
+            <span class="profile-trigger-name" id="ledgerProfileTriggerName">—</span>
+            <span class="profile-trigger-caret">▾</span>
+        </div>
+    </div>
+</header>
+
+<main style="padding:2rem 3rem;background:#080e1a;min-height:calc(100vh - 78px);">
+
+    <!-- Back + title -->
+    <div style="display:flex;align-items:flex-start;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+        <button onclick="history.back()" style="background:transparent;border:1px solid rgba(255,255,255,0.12);color:#94a3b8;padding:6px 14px;border-radius:6px;font-size:0.8rem;margin:0;" data-tooltip="Go back">← Back</button>
+        <div>
+            <h1 id="ledgerTitle" style="font-size:1.4rem;font-weight:700;color:#f1f5f9;margin:0;font-family:'DM Sans',sans-serif;">Account Ledger</h1>
+            <p  id="ledgerSubtitle" style="font-size:0.82rem;color:#64748b;margin:4px 0 0;font-family:'DM Sans',sans-serif;"></p>
+        </div>
+    </div>
+
+    <!-- Filters (#44) -->
+    <div class="jrn-filter-bar" style="margin-bottom:1.25rem;">
+        <div class="filter-search-wrap" style="flex:1;">
+            <span class="filter-search-icon">⌕</span>
+            <input type="text" id="ledgerSearch" placeholder="Search by description or amount…" data-tooltip="Search entries by description or amount">
+        </div>
+        <input type="date" id="ledgerDateFrom" data-tooltip="Filter from date">
+        <span style="color:#475569;font-size:0.8rem;">to</span>
+        <input type="date" id="ledgerDateTo"   data-tooltip="Filter to date">
+        <button id="ledgerClearFilter" data-tooltip="Clear all filters">Clear</button>
+    </div>
+
+    <!-- Ledger table (#43) -->
+    <div class="jrn-table-wrap">
+        <table id="ledgerTable">
+            <thead>
+            <tr>
+                <th>PR</th>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Debit</th>
+                <th>Credit</th>
+                <th>Balance</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</main>
+
+<!-- PR Detail Modal (#16 #42) -->
+<div id="prModal" class="modal">
+    <div class="modal-content" style="max-width:560px;">
+        <span class="close" id="prModalClose">&times;</span>
+        <h3 id="prModalTitle">Journal Entry Detail</h3>
+        <div id="prModalContent"></div>
+    </div>
+</div>
+
+<button class="help-fab" id="helpBtn" data-tooltip="Help" style="display:none;">?</button>
+<div id="helpModal"   class="help-modal"  style="display:none;"></div>
+<div id="helpOverlay" class="help-overlay"></div>
+
+<script src="script.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        // ── Role-aware nav ────────────────────────────────────────────
+        const role = localStorage.getItem("currentRole") || "manager";
+        const roleCfg = {
+            manager: {
+                name:"Manager", label:"Manager", avatar:"M",
+                img:"Assets/managerProfileImage.png",
+                badgeStyle:"color:#60a5fa;background:rgba(96,165,250,0.12);border-color:rgba(96,165,250,0.3);",
+                avatarStyle:"background:linear-gradient(135deg,#1d4ed8,#1e40af);color:#bfdbfe;",
+                nav:[
+                    { href:"manager.html",                     icon:"⊞",  label:"Dashboard" },
+                    { href:"account-management-readonly.html", icon:"📒", label:"Chart of Accounts" },
+                    { href:"journal.html",                     icon:"📝", label:"Journal Transactions" },
+                    { href:"#",                                icon:"📊", label:"Financial Reports" },
+                    { href:"inbox.html",                       icon:"📬", label:"Inbox" },
+                ]
+            },
+            accountant: {
+                name:"Accountant", label:"Accountant", avatar:"A",
+                img:"Assets/accountantProfileImage.png",
+                badgeStyle:"color:#a78bfa;background:rgba(167,139,250,0.12);border-color:rgba(167,139,250,0.3);",
+                avatarStyle:"background:linear-gradient(135deg,#6d28d9,#5b21b6);color:#ddd6fe;",
+                nav:[
+                    { href:"accountant.html",                  icon:"⊞",  label:"Dashboard" },
+                    { href:"account-management-readonly.html", icon:"📒", label:"Chart of Accounts" },
+                    { href:"journal-accountant.html",          icon:"✏️", label:"Journal Entries" },
+                    { href:"inbox.html",                       icon:"📬", label:"Inbox" },
+                ]
+            }
+        };
+        const cfg = roleCfg[role] || roleCfg.manager;
+        document.getElementById("ledgerNav").innerHTML = cfg.nav.map(n => `<a href="${n.href}" class="waffle-nav-item"><span class="waffle-nav-icon">${n.icon}</span><span>${n.label}</span></a>`).join("");
+        const badge = document.getElementById("ledgerRoleBadge"); badge.textContent = cfg.label; badge.style.cssText = cfg.badgeStyle;
+        const av    = document.getElementById("ledgerAvatar");    av.textContent   = cfg.avatar; av.style.cssText    = cfg.avatarStyle;
+        document.getElementById("ledgerProfileName").textContent        = cfg.name;
+        document.getElementById("ledgerProfileRole").textContent        = cfg.label;
+        document.getElementById("ledgerProfileTriggerName").textContent = cfg.name;
+        document.getElementById("ledgerProfileImg").src                 = cfg.img;
+
+        // ── Account + ledger data ─────────────────────────────────────
+        const params      = new URLSearchParams(window.location.search);
+        const accountName = params.get("account") || "";
+        const accounts    = JSON.parse(localStorage.getItem("accounts")) || [];
+        const acc         = accounts.find(a => a.accountName === accountName);
+
+        document.getElementById("ledgerTitle").textContent    = accountName ? `${accountName} — Ledger` : "Account Ledger";
+        document.getElementById("ledgerSubtitle").textContent = acc
+            ? `Account #${acc.accountNumber} | ${acc.category} | Normal Side: ${acc.normalSide} | Current Balance: $${parseFloat(acc.balance).toFixed(2)}`
+            : "";
+
+        // ── Filters ───────────────────────────────────────────────────
+        let searchTerm = "", dateFrom = "", dateTo = "";
+
+        document.getElementById("ledgerSearch").addEventListener("input",    function() { searchTerm = this.value.toLowerCase(); renderLedger(); });
+        document.getElementById("ledgerDateFrom").addEventListener("change", function() { dateFrom   = this.value;               renderLedger(); });
+        document.getElementById("ledgerDateTo").addEventListener("change",   function() { dateTo     = this.value;               renderLedger(); });
+        document.getElementById("ledgerClearFilter").addEventListener("click", function() {
+            searchTerm = ""; dateFrom = ""; dateTo = "";
+            document.getElementById("ledgerSearch").value = document.getElementById("ledgerDateFrom").value = document.getElementById("ledgerDateTo").value = "";
+            renderLedger();
+        });
+
+        // ── Render ledger (#43) ───────────────────────────────────────
+        function renderLedger() {
+            const tbody   = document.querySelector("#ledgerTable tbody");
+            const ledgers = JSON.parse(localStorage.getItem("ledgers")) || {};
+            let entries   = ledgers[accountName] ? [...ledgers[accountName]] : [];
+
+            if (dateFrom)    entries = entries.filter(e => e.date >= dateFrom);
+            if (dateTo)      entries = entries.filter(e => e.date <= dateTo);
+            if (searchTerm)  entries = entries.filter(e =>
+                (e.description||"").toLowerCase().includes(searchTerm) ||
+                String(e.debit).includes(searchTerm) ||
+                String(e.credit).includes(searchTerm) ||
+                String(e.balance).includes(searchTerm)
+            );
+
+            tbody.innerHTML = "";
+
+            // Opening balance row
+            const openingBal = acc ? parseFloat(acc.balance) : 0;
+            const hasEntries = (ledgers[accountName]||[]).length > 0;
+            tbody.innerHTML += `
+        <tr style="background:rgba(255,255,255,0.025);">
+            <td style="color:#475569;font-style:italic;font-size:0.8rem;">—</td>
+            <td style="color:#475569;font-style:italic;font-size:0.8rem;">Opening</td>
+            <td style="color:#475569;font-style:italic;font-size:0.8rem;">Opening balance</td>
+            <td style="color:#475569;">—</td>
+            <td style="color:#475569;">—</td>
+            <td style="font-family:'DM Mono',monospace;color:#34d399;font-weight:600;">$${(hasEntries ? (entries.length ? 0 : 0) : openingBal).toFixed(2)}</td>
+        </tr>`;
+
+            if (!entries.length) {
+                tbody.innerHTML += `<tr><td colspan="6" style="text-align:center;color:#475569;padding:2rem;font-size:0.85rem;">No posted entries${dateFrom||dateTo||searchTerm ? " match your filters" : " yet"}.</td></tr>`;
+                return;
+            }
+
+            entries.forEach(e => {
+                tbody.innerHTML += `
+            <tr>
+                <td>
+                    <a href="#" class="jrn-pr-link" onclick="openPRModal('${e.pr}');return false;"
+                       data-tooltip="Click to view journal entry ${e.pr}">${e.pr}</a>
+                </td>
+                <td>${e.date}</td>
+                <td style="color:#94a3b8;font-size:0.82rem;">${e.description || "—"}</td>
+                <td style="font-family:'DM Mono',monospace;color:#60a5fa;">${e.debit  > 0 ? "$" + parseFloat(e.debit).toFixed(2)  : "—"}</td>
+                <td style="font-family:'DM Mono',monospace;color:#f472b6;">${e.credit > 0 ? "$" + parseFloat(e.credit).toFixed(2) : "—"}</td>
+                <td style="font-family:'DM Mono',monospace;font-weight:600;color:#e2e8f0;">$${parseFloat(e.balance).toFixed(2)}</td>
+            </tr>`;
+            });
+        }
+
+        // ── PR Modal (#16 #42) ────────────────────────────────────────
+        window.openPRModal = function(pr) {
+            const journals = JSON.parse(localStorage.getItem("journals")) || [];
+            const j = journals.find(x => x.pr === pr);
+            if (!j) { alert(`Journal entry ${pr} not found.`); return; }
+
+            const drLines = j.debitLines  || [{ account: j.debitAccount,  amount: j.debit  }];
+            const crLines = j.creditLines || [{ account: j.creditAccount, amount: j.credit }];
+            const sCls    = { Pending:"jrn-status-pending", Approved:"jrn-status-approved", Rejected:"jrn-status-rejected" }[j.status] || "";
+
+            document.getElementById("prModalTitle").textContent = `Journal Entry — ${j.pr}`;
+            document.getElementById("prModalContent").innerHTML = `
+            <table style="width:100%;border-collapse:collapse;margin-bottom:14px;">
+                <tr><td style="padding:6px 10px;color:#64748b;font-size:0.8rem;font-weight:600;width:36%;">PR Number</td>   <td style="padding:6px 10px;color:#e2e8f0;font-family:'DM Mono',monospace;">${j.pr}</td></tr>
+                <tr><td style="padding:6px 10px;color:#64748b;font-size:0.8rem;font-weight:600;">Date</td>                  <td style="padding:6px 10px;color:#e2e8f0;">${j.date}</td></tr>
+                <tr><td style="padding:6px 10px;color:#64748b;font-size:0.8rem;font-weight:600;">Description</td>           <td style="padding:6px 10px;color:#e2e8f0;">${j.description||"—"}</td></tr>
+                <tr><td style="padding:6px 10px;color:#64748b;font-size:0.8rem;font-weight:600;">Created By</td>            <td style="padding:6px 10px;color:#e2e8f0;">${j.createdBy}</td></tr>
+                <tr><td style="padding:6px 10px;color:#64748b;font-size:0.8rem;font-weight:600;">Status</td>                <td style="padding:6px 10px;"><span class="jrn-status-badge ${sCls}">${j.status}</span></td></tr>
+                ${j.approvedBy ? `<tr><td style="padding:6px 10px;color:#64748b;font-size:0.8rem;font-weight:600;">Approved By</td><td style="padding:6px 10px;color:#34d399;">${j.approvedBy} &mdash; ${new Date(j.approvedAt).toLocaleString()}</td></tr>` : ""}
+                ${j.comment    ? `<tr><td style="padding:6px 10px;color:#64748b;font-size:0.8rem;font-weight:600;">Comment</td><td style="padding:6px 10px;color:#fca5a5;">${j.comment}</td></tr>` : ""}
+            </table>
+            <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#475569;margin-bottom:8px;">Entry Lines</div>
+            <table style="width:100%;border-collapse:collapse;border:1px solid rgba(255,255,255,0.07);border-radius:8px;overflow:hidden;">
+                <thead><tr style="background:rgba(255,255,255,0.04);">
+                    <th style="padding:8px 12px;text-align:left;font-size:0.7rem;color:#475569;text-transform:uppercase;">Type</th>
+                    <th style="padding:8px 12px;text-align:left;font-size:0.7rem;color:#475569;text-transform:uppercase;">Account</th>
+                    <th style="padding:8px 12px;text-align:right;font-size:0.7rem;color:#475569;text-transform:uppercase;">Amount</th>
+                </tr></thead>
+                <tbody>
+                    ${drLines.map(l=>`<tr><td style="padding:8px 12px;color:#60a5fa;font-size:0.82rem;font-weight:600;">DEBIT</td><td style="padding:8px 12px;color:#cbd5e1;font-size:0.82rem;">${l.account}</td><td style="padding:8px 12px;text-align:right;font-family:'DM Mono',monospace;color:#60a5fa;">$${parseFloat(l.amount).toFixed(2)}</td></tr>`).join("")}
+                    ${crLines.map(l=>`<tr><td style="padding:8px 12px;color:#f472b6;font-size:0.82rem;font-weight:600;">CREDIT</td><td style="padding:8px 12px;color:#cbd5e1;font-size:0.82rem;padding-left:28px;">${l.account}</td><td style="padding:8px 12px;text-align:right;font-family:'DM Mono',monospace;color:#f472b6;">$${parseFloat(l.amount).toFixed(2)}</td></tr>`).join("")}
+                    <tr style="background:rgba(255,255,255,0.03);border-top:1px solid rgba(255,255,255,0.08);">
+                        <td colspan="2" style="padding:8px 12px;font-weight:700;color:#94a3b8;font-size:0.78rem;">TOTALS</td>
+                        <td style="padding:8px 12px;text-align:right;font-family:'DM Mono',monospace;font-size:0.82rem;">
+                            <span style="color:#60a5fa;">Dr $${drLines.reduce((s,l)=>s+parseFloat(l.amount),0).toFixed(2)}</span>
+                            &nbsp;/&nbsp;
+                            <span style="color:#f472b6;">Cr $${crLines.reduce((s,l)=>s+parseFloat(l.amount),0).toFixed(2)}</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>`;
+            document.getElementById("prModal").style.display = "block";
+        };
+
+        document.getElementById("prModalClose").addEventListener("click", () => document.getElementById("prModal").style.display = "none");
+        window.addEventListener("click", e => { const m = document.getElementById("prModal"); if (m && e.target === m) m.style.display = "none"; });
+
+        renderLedger();
+    });
+</script>
+</body>
+</html>

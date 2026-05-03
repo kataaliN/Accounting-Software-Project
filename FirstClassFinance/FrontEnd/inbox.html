@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Inbox — First Class Finance</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        .inbox-wrap { display:flex; height:calc(100vh - 78px); overflow:hidden; }
+
+        /* Sidebar */
+        .inbox-sidebar {
+            width:300px; flex-shrink:0;
+            background:linear-gradient(160deg,#0d1a2e,#080e1a);
+            border-right:1px solid rgba(255,255,255,0.07);
+            display:flex; flex-direction:column; overflow:hidden;
+        }
+        .inbox-sb-top {
+            padding:14px 16px 10px;
+            border-bottom:1px solid rgba(255,255,255,0.07);
+            display:flex; align-items:center; justify-content:space-between;
+        }
+        .inbox-sb-title { font-size:0.7rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#475569; }
+        .btn-compose {
+            background:linear-gradient(135deg,#1d4ed8,#1e40af);
+            color:#fff; border:none; border-radius:6px;
+            padding:5px 11px; font-size:0.73rem; font-weight:600;
+            cursor:pointer; margin:0; transition:opacity 0.15s;
+        }
+        .btn-compose:hover { opacity:0.85; transform:none; }
+        .btn-compose:disabled { opacity:0.35; cursor:not-allowed; }
+
+        .inbox-boxtabs { display:flex; gap:2px; padding:8px 10px 6px; }
+        .inbox-boxtab {
+            flex:1; padding:5px 8px; font-size:0.72rem; font-weight:600;
+            border-radius:5px; background:transparent; border:none;
+            color:#64748b; cursor:pointer; margin:0; text-align:center;
+            transition:background 0.15s, color 0.15s;
+        }
+        .inbox-boxtab:hover { background:rgba(255,255,255,0.05); color:#94a3b8; transform:none; }
+        .inbox-boxtab.active { background:rgba(96,165,250,0.12); color:#60a5fa; }
+
+        .inbox-search-row { padding:0 10px 8px; position:relative; }
+        .inbox-search-row input {
+            width:100%; padding:6px 10px 6px 28px;
+            background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.08);
+            border-radius:6px; color:#e2e8f0; font-size:0.78rem; margin:0;
+        }
+        .inbox-search-row input:focus { outline:none; border-color:#60a5fa; }
+        .inbox-search-icon { position:absolute; left:20px; top:50%; transform:translateY(-50%); color:#475569; font-size:0.9rem; pointer-events:none; }
+
+        .inbox-list { flex:1; overflow-y:auto; }
+        .inbox-item {
+            display:flex; align-items:flex-start; gap:9px;
+            padding:11px 14px; border-bottom:1px solid rgba(255,255,255,0.04);
+            cursor:pointer; transition:background 0.12s;
+        }
+        .inbox-item:hover { background:rgba(255,255,255,0.04); }
+        .inbox-item.is-active { background:rgba(96,165,250,0.08); border-left:3px solid #60a5fa; padding-left:11px; }
+        .inbox-item.is-unread { background:rgba(96,165,250,0.05); }
+        .inbox-av { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.82rem; font-weight:700; flex-shrink:0; }
+        .inbox-item-body { flex:1; min-width:0; }
+        .inbox-item-from    { font-size:0.8rem; font-weight:600; color:#e2e8f0; }
+        .inbox-item-subject { font-size:0.76rem; color:#94a3b8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:1px; }
+        .inbox-item-preview { font-size:0.7rem; color:#475569; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:2px; }
+        .inbox-item-side { display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0; }
+        .inbox-item-time { font-size:0.66rem; color:#475569; }
+        .inbox-unread-pip { width:7px; height:7px; border-radius:50%; background:#60a5fa; }
+        .inbox-list-empty { text-align:center; padding:2.5rem 1rem; color:#334155; font-size:0.8rem; }
+
+        /* Main panel */
+        .inbox-main { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; background:#080e1a; }
+        .inbox-blank { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.6rem; }
+        .inbox-blank-icon { font-size:2.2rem; opacity:0.25; }
+        .inbox-blank p    { font-size:0.875rem; color:#475569; margin:0; }
+        .inbox-blank span { font-size:0.76rem; color:#334155; }
+
+        .inbox-thread { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+        .inbox-thread-hd { padding:14px 22px; border-bottom:1px solid rgba(255,255,255,0.07); background:rgba(255,255,255,0.02); flex-shrink:0; }
+        .inbox-thread-subject { font-size:0.98rem; font-weight:700; color:#f1f5f9; margin:0 0 4px; }
+        .inbox-thread-meta { font-size:0.73rem; color:#475569; display:flex; gap:12px; flex-wrap:wrap; }
+
+        .inbox-msgs { flex:1; overflow-y:auto; padding:14px 22px; display:flex; flex-direction:column; gap:12px; }
+        .inbox-msg { background:linear-gradient(140deg,#0d1a2e,#080e1a); border:1px solid rgba(255,255,255,0.07); border-radius:10px; overflow:hidden; }
+        .inbox-msg-hd { display:flex; align-items:center; justify-content:space-between; padding:11px 15px; border-bottom:1px solid rgba(255,255,255,0.05); gap:10px; flex-wrap:wrap; }
+        .inbox-msg-from-wrap { display:flex; align-items:center; gap:9px; }
+        .inbox-msg-av { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; flex-shrink:0; }
+        .inbox-msg-name { font-size:0.83rem; font-weight:600; color:#e2e8f0; }
+        .inbox-msg-sub  { font-size:0.68rem; color:#64748b; }
+        .inbox-msg-time { font-size:0.7rem; color:#475569; }
+        .inbox-msg-body { padding:13px 15px; font-size:0.84rem; color:#94a3b8; line-height:1.7; word-break:break-word; }
+
+        /* Reply */
+        .inbox-reply-zone { padding:12px 22px 16px; border-top:1px solid rgba(255,255,255,0.07); background:rgba(0,0,0,0.1); flex-shrink:0; }
+        .inbox-reply-label { font-size:0.66rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#475569; margin-bottom:7px; }
+        .inbox-reply-row { display:flex; gap:9px; align-items:flex-end; }
+        .inbox-reply-ta { flex:1; padding:9px 12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:7px; color:#e2e8f0; font-size:0.84rem; resize:none; min-height:66px; font-family:'DM Sans',sans-serif; transition:border-color 0.15s; margin:0; }
+        .inbox-reply-ta:focus { outline:none; border-color:#60a5fa; }
+        .inbox-reply-btn { background:linear-gradient(135deg,#1d4ed8,#1e40af); color:#fff; border:none; border-radius:7px; padding:9px 16px; font-size:0.8rem; font-weight:600; cursor:pointer; margin:0; height:42px; transition:opacity 0.15s; }
+        .inbox-reply-btn:hover { opacity:0.85; transform:none; }
+
+        /* Restriction notice */
+        .inbox-restrict-notice { padding:12px 22px 14px; border-top:1px solid rgba(255,255,255,0.07); background:rgba(251,191,36,0.05); flex-shrink:0; font-size:0.78rem; color:#fbbf24; }
+
+        /* Compose modal */
+        .cmp-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); backdrop-filter:blur(3px); z-index:1800; align-items:center; justify-content:center; }
+        .cmp-overlay.open { display:flex; }
+        .cmp-box { background:linear-gradient(160deg,#1a2740,#111e30); border:1px solid rgba(255,255,255,0.09); border-radius:12px; padding:26px 30px; width:490px; max-width:95vw; box-shadow:0 24px 60px rgba(0,0,0,0.5); }
+        .cmp-hd { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; padding-bottom:13px; border-bottom:1px solid rgba(255,255,255,0.07); }
+        .cmp-hd h3 { font-size:0.93rem; font-weight:700; color:#94a3b8; letter-spacing:0.05em; text-transform:uppercase; margin:0; }
+        .cmp-close { background:transparent; border:none; color:#475569; font-size:15px; cursor:pointer; padding:3px 6px; border-radius:4px; margin:0; line-height:1; }
+        .cmp-close:hover { color:#e2e8f0; transform:none; }
+        .cmp-field { margin-bottom:13px; }
+        .cmp-field label { display:block; font-size:0.68rem; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:#64748b; margin-bottom:5px; }
+        .cmp-field select, .cmp-field input, .cmp-field textarea { width:100%; padding:8px 11px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:#e2e8f0; font-size:0.85rem; font-family:'DM Sans',sans-serif; margin:0; }
+        .cmp-field select:focus, .cmp-field input:focus, .cmp-field textarea:focus { outline:none; border-color:#60a5fa; }
+        .cmp-field select option { background:#1e293b; }
+        .cmp-field textarea { resize:vertical; min-height:95px; }
+        .cmp-err  { color:#f87171; font-size:0.76rem; margin-top:7px; display:none; }
+        .cmp-acts { display:flex; gap:8px; margin-top:16px; }
+        .cmp-send   { flex:1; padding:9px; font-size:0.85rem; font-weight:600; border-radius:7px; border:none; cursor:pointer; background:linear-gradient(135deg,#1d4ed8,#1e40af); color:#fff; }
+        .cmp-cancel { padding:9px 15px; font-size:0.85rem; font-weight:600; border-radius:7px; cursor:pointer; background:transparent; border:1px solid rgba(255,255,255,0.12); color:#94a3b8; }
+        .cmp-cancel:hover { transform:none; }
+
+        /* Toast */
+        .inbox-toast { position:fixed; bottom:26px; right:26px; display:none; padding:9px 16px; border-radius:8px; font-size:0.8rem; font-weight:600; z-index:2000; }
+
+        /* Avatar colours */
+        .av-admin      { background:linear-gradient(135deg,#047857,#065f46); color:#a7f3d0; }
+        .av-manager    { background:linear-gradient(135deg,#1d4ed8,#1e40af); color:#bfdbfe; }
+        .av-accountant { background:linear-gradient(135deg,#6d28d9,#5b21b6); color:#ddd6fe; }
+    </style>
+</head>
+<body class="manager-page">
+
+<!-- Waffle Sidebar -->
+<div id="waffleSidebar" class="waffle-sidebar">
+    <div class="waffle-sidebar-header">
+        <span class="waffle-sidebar-title">Navigation</span>
+        <button class="waffle-sidebar-close" id="waffleSidebarClose">&#x2715;</button>
+    </div>
+    <nav class="waffle-nav" id="inboxNav"></nav>
+    <div class="waffle-sidebar-footer">
+        <span class="waffle-role-badge" id="inboxRoleBadge">—</span>
+    </div>
+</div>
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+<!-- Profile Dropdown -->
+<div id="profileDropdown" class="profile-dropdown">
+    <div class="profile-dropdown-header">
+        <div class="profile-dropdown-avatar" id="inboxAvatar">?</div>
+        <div>
+            <div class="profile-dropdown-name" id="inboxProfileName">—</div>
+            <div class="profile-dropdown-role" id="inboxProfileRole">—</div>
+        </div>
+    </div>
+    <div class="profile-dropdown-divider"></div>
+    <a href="index.html" class="profile-dropdown-item"><span>⎋</span> Logout</a>
+</div>
+
+<!-- Navbar -->
+<header class="navbar">
+    <div class="nav-left">
+        <button class="waffle-btn" id="waffleBtn" data-tooltip="Open navigation menu">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </button>
+        <div class="nav-divider"></div>
+        <div class="nav-brand">
+            <img src="Assets/LogoFirstClass.png" alt="Logo" class="nav-logo">
+            <span class="site-name">First Class <span>Finance</span></span>
+        </div>
+    </div>
+    <div class="nav-right">
+        <div class="profile-trigger" id="profileTrigger" data-tooltip="Account options">
+            <img src="" alt="Profile" class="profile-icon" id="inboxProfileImg">
+            <span class="profile-trigger-name" id="inboxProfileTriggerName">—</span>
+            <span class="profile-trigger-caret">▾</span>
+        </div>
+    </div>
+</header>
+
+<!-- Compose Modal -->
+<div class="cmp-overlay" id="cmpOverlay">
+    <div class="cmp-box">
+        <div class="cmp-hd">
+            <h3>✉ New Message</h3>
+            <button class="cmp-close" id="cmpClose">&#x2715;</button>
+        </div>
+        <div class="cmp-field">
+            <label>To</label>
+            <select id="cmpTo"></select>
+        </div>
+        <div class="cmp-field">
+            <label>Subject</label>
+            <input type="text" id="cmpSubject" placeholder="Message subject…">
+        </div>
+        <div class="cmp-field">
+            <label>Message</label>
+            <textarea id="cmpBody" placeholder="Write your message here…"></textarea>
+        </div>
+        <div class="cmp-err" id="cmpErr"></div>
+        <div class="cmp-acts">
+            <button class="cmp-send"   id="cmpSend">✉ Send Message</button>
+            <button class="cmp-cancel" id="cmpCancel">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<button class="help-fab" id="helpBtn" style="display:none;">?</button>
+<div id="helpModal"   class="help-modal"  style="display:none;"></div>
+<div id="helpOverlay" class="help-overlay"></div>
+<div class="inbox-toast" id="inboxToast"></div>
+
+<div class="inbox-wrap">
+    <div class="inbox-sidebar">
+        <div class="inbox-sb-top">
+            <span class="inbox-sb-title">Inbox</span>
+            <button class="btn-compose" id="openCompose">✎ Compose</button>
+        </div>
+        <div class="inbox-boxtabs">
+            <button class="inbox-boxtab active" data-box="inbox">Inbox</button>
+            <button class="inbox-boxtab"        data-box="sent">Sent</button>
+        </div>
+        <div class="inbox-search-row">
+            <span class="inbox-search-icon">⌕</span>
+            <input type="text" id="inboxSearch" placeholder="Search messages…">
+        </div>
+        <div class="inbox-list" id="inboxList"></div>
+    </div>
+    <div class="inbox-main" id="inboxMain">
+        <div class="inbox-blank">
+            <div class="inbox-blank-icon">📬</div>
+            <p>Select a message to read</p>
+            <span>or compose a new one</span>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+<script>
+    (function () {
+        "use strict";
+
+        /* ─────────────────────────────────────────────────────────────────
+           ROLE DEFINITIONS
+           Each role declares:
+             key        – localStorage inbox key
+             toKeys     – which inboxes this role CAN send NEW messages to
+             toNames    – display names matching toKeys
+             canCompose – whether the Compose button is shown at all
+             canReply   – whether replies are allowed (always true here,
+                          but reply targets are restricted to the sender)
+        ───────────────────────────────────────────────────────────────── */
+        var ROLES = {
+            admin: {
+                name:"Admin", label:"Administrator", avatar:"A",
+                key:"adminInbox", img:"Assets/ProfileAdminImage.png",
+                avCls:"av-admin",
+                badgeStyle: "color:#34d399;background:rgba(52,211,153,0.12);border-color:rgba(52,211,153,0.3);",
+                avatarStyle:"background:linear-gradient(135deg,#047857,#065f46);color:#a7f3d0;",
+                nav:[
+                    {href:"admin.html",               icon:"⊞",  label:"Dashboard"},
+                    {href:"employee-management.html", icon:"👥", label:"Employee Management"},
+                    {href:"account-management.html",  icon:"📒", label:"Account Management"},
+                    {href:"access-requests.html",     icon:"🔔", label:"Access Requests"},
+                    {href:"inbox.html",               icon:"📬", label:"Inbox", active:true}
+                ],
+                /* Admin can message both Manager and Accountant */
+                toKeys:  ["managerInbox","accountantInbox"],
+                toNames: ["Manager","Accountant"],
+                canCompose: true
+            },
+            manager: {
+                name:"Manager", label:"Manager", avatar:"M",
+                key:"managerInbox", img:"Assets/managerProfileImage.png",
+                avCls:"av-manager",
+                badgeStyle: "color:#60a5fa;background:rgba(96,165,250,0.12);border-color:rgba(96,165,250,0.3);",
+                avatarStyle:"background:linear-gradient(135deg,#1d4ed8,#1e40af);color:#bfdbfe;",
+                nav:[
+                    {href:"manager.html",                     icon:"⊞",  label:"Dashboard"},
+                    {href:"account-management-readonly.html", icon:"📒", label:"Chart of Accounts"},
+                    {href:"journal.html",                     icon:"📝", label:"Journal Transactions"},
+                    {href:"reports.html",                     icon:"📊", label:"Financial Reports"},
+                    {href:"inbox.html",                       icon:"📬", label:"Inbox", active:true}
+                ],
+                /* Manager can message Admin and Accountant */
+                toKeys:  ["adminInbox","accountantInbox"],
+                toNames: ["Admin","Accountant"],
+                canCompose: true
+            },
+            accountant: {
+                name:"Accountant", label:"Accountant", avatar:"A",
+                key:"accountantInbox", img:"Assets/accountantProfileImage.png",
+                avCls:"av-accountant",
+                badgeStyle: "color:#a78bfa;background:rgba(167,139,250,0.12);border-color:rgba(167,139,250,0.3);",
+                avatarStyle:"background:linear-gradient(135deg,#6d28d9,#5b21b6);color:#ddd6fe;",
+                nav:[
+                    {href:"accountant.html",                  icon:"⊞",  label:"Dashboard"},
+                    {href:"account-management-readonly.html", icon:"📒", label:"Chart of Accounts"},
+                    {href:"journal-accountant.html",          icon:"✏️", label:"Journal Entries"},
+                    {href:"inbox.html",                       icon:"📬", label:"Inbox", active:true}
+                ],
+                /* Accountant can ONLY send new messages to Manager */
+                toKeys:  ["managerInbox"],
+                toNames: ["Manager"],
+                canCompose: true
+            }
+        };
+
+        /* Metadata for rendering avatars by inbox key */
+        var KEY_META = {
+            adminInbox:      {name:"Admin",      avCls:"av-admin",      init:"A"},
+            managerInbox:    {name:"Manager",    avCls:"av-manager",    init:"M"},
+            accountantInbox: {name:"Accountant", avCls:"av-accountant", init:"A"}
+        };
+
+        /* Notification store keys per inbox key */
+        var NOTIF_STORE = {
+            adminInbox:      "adminNotifications",
+            managerInbox:    "managerNotifications",
+            accountantInbox: "accountantNotifications"
+        };
+
+        /* ── Role detection ──────────────────────────────────────────────
+           Read currentRole from localStorage. If missing or unrecognised,
+           fall back to "manager" so the page never silently shows the
+           wrong inbox. We also guard against the page being opened before
+           login by redirecting to index if no role is stored at all.
+        ───────────────────────────────────────────────────────────────── */
+        var role = localStorage.getItem("currentRole");
+        /* Backend returns "administrator"; normalise to the key used in ROLES */
+        if (role === "administrator") role = "admin";
+        if (!role || !ROLES[role]) {
+            /* Not logged in or unknown role — send to login */
+            window.location.href = "index.html";
+            return;
+        }
+        var cfg = ROLES[role];
+        var activeBox = "inbox";
+        var activeIdx = -1;
+        var searchQ   = "";
+
+        /* ── Storage ── */
+        function getInbox() { return JSON.parse(localStorage.getItem(cfg.key))          || []; }
+        function getSent()  { return JSON.parse(localStorage.getItem(cfg.key + "_sent")) || []; }
+        function saveInbox(d) { localStorage.setItem(cfg.key,           JSON.stringify(d)); }
+        function saveSent(d)  { localStorage.setItem(cfg.key + "_sent", JSON.stringify(d)); }
+        function getBox()   { return activeBox === "inbox" ? getInbox() : getSent(); }
+
+        /* ── Bootstrap nav + profile ── */
+        document.getElementById("inboxNav").innerHTML = cfg.nav.map(function(n) {
+            return '<a href="' + n.href + '" class="waffle-nav-item' + (n.active ? " active" : "") + '">' +
+                '<span class="waffle-nav-icon">' + n.icon + '</span><span>' + n.label + '</span></a>';
+        }).join("");
+
+        var bdg = document.getElementById("inboxRoleBadge");
+        bdg.textContent = cfg.label; bdg.style.cssText = cfg.badgeStyle;
+        var avEl = document.getElementById("inboxAvatar");
+        avEl.textContent = cfg.avatar; avEl.style.cssText = cfg.avatarStyle;
+        document.getElementById("inboxProfileName").textContent        = cfg.name;
+        document.getElementById("inboxProfileRole").textContent        = cfg.label;
+        document.getElementById("inboxProfileTriggerName").textContent = cfg.name;
+        document.getElementById("inboxProfileImg").src                 = cfg.img;
+
+        /* Hide or show compose button based on role capability */
+        if (!cfg.canCompose) {
+            document.getElementById("openCompose").style.display = "none";
+        }
+
+        /* ── Helpers ── */
+        function esc(s) {
+            return String(s || "")
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        }
+        function fmtShort(ts) {
+            if (!ts) return "";
+            return new Date(ts).toLocaleDateString(undefined, {month:"short", day:"numeric"});
+        }
+        function fmtFull(ts) {
+            if (!ts) return "";
+            return new Date(ts).toLocaleString();
+        }
+        function avDiv(key, sz, cls) {
+            var m = KEY_META[key] || {avCls:"av-manager", init:"?"};
+            return '<div class="' + (cls || "inbox-av") + ' ' + m.avCls +
+                '" style="width:' + sz + 'px;height:' + sz + 'px;">' + m.init + '</div>';
+        }
+        function pushNotif(toKey, from, subject) {
+            var nk = NOTIF_STORE[toKey];
+            if (!nk) return;
+            var n = JSON.parse(localStorage.getItem(nk)) || [];
+            n.push({type:"inbox_message", from:from, subject:subject, timestamp:new Date().toISOString(), read:false});
+            localStorage.setItem(nk, JSON.stringify(n));
+        }
+        function toast(msg, good) {
+            var t = document.getElementById("inboxToast");
+            t.textContent = msg;
+            var c = good
+                ? ["rgba(52,211,153,0.12)","rgba(52,211,153,0.3)","#34d399"]
+                : ["rgba(248,113,113,0.12)","rgba(248,113,113,0.3)","#f87171"];
+            t.style.cssText = "display:block;background:" + c[0] + ";border:1px solid " + c[1] +
+                ";color:" + c[2] + ";padding:9px 16px;border-radius:8px;font-size:0.8rem;" +
+                "font-weight:600;position:fixed;bottom:26px;right:26px;z-index:2000;";
+            clearTimeout(t._t);
+            t._t = setTimeout(function() { t.style.display = "none"; }, 3000);
+        }
+
+        /* ── Render thread list ── */
+        function renderList() {
+            var list = document.getElementById("inboxList");
+            var msgs = getBox();
+            if (searchQ) {
+                var q = searchQ;
+                msgs = msgs.filter(function(m) {
+                    return (m.subject || "").toLowerCase().indexOf(q) > -1 ||
+                        (m.message || "").toLowerCase().indexOf(q) > -1 ||
+                        (m.from    || "").toLowerCase().indexOf(q) > -1 ||
+                        (m.to      || "").toLowerCase().indexOf(q) > -1;
+                });
+            }
+            if (!msgs.length) {
+                list.innerHTML = '<div class="inbox-list-empty">' +
+                    (activeBox === "inbox" ? "No messages yet." : "No sent messages.") + '</div>';
+                return;
+            }
+            /* Index before reversing so we can reference original array position */
+            var indexed = msgs.map(function(m, i) { return Object.assign({}, m, {_i: i}); }).reverse();
+            list.innerHTML = indexed.map(function(m) {
+                var partnerKey  = activeBox === "inbox" ? (m.fromKey || "") : (m.toKey || "");
+                var partnerName = activeBox === "inbox" ? (m.from || "—") : (m.to || "—");
+                var unread      = activeBox === "inbox" && !m.read;
+                var replies     = m.replies || [];
+                var preview     = replies.length ? replies[replies.length - 1].message : m.message;
+                return '<div class="inbox-item' + (m._i === activeIdx ? " is-active" : "") +
+                    (unread ? " is-unread" : "") + '" data-orig="' + m._i + '">' +
+                    avDiv(partnerKey, 32, "inbox-av") +
+                    '<div class="inbox-item-body">' +
+                    '<div class="inbox-item-from">'    + esc(partnerName) + '</div>' +
+                    '<div class="inbox-item-subject">' + esc(m.subject || "(no subject)") + '</div>' +
+                    '<div class="inbox-item-preview">' + esc((preview || "").substring(0, 55)) + '…</div>' +
+                    '</div>' +
+                    '<div class="inbox-item-side">' +
+                    '<span class="inbox-item-time">' + fmtShort(m.timestamp) + '</span>' +
+                    (unread ? '<span class="inbox-unread-pip"></span>' : '') +
+                    '</div></div>';
+            }).join("");
+            list.querySelectorAll(".inbox-item").forEach(function(el) {
+                el.addEventListener("click", function() {
+                    openThread(parseInt(this.getAttribute("data-orig"), 10));
+                });
+            });
+        }
+
+        /* ── Open a thread ── */
+        function openThread(idx) {
+            activeIdx = idx;
+            var msgs = getBox();
+            var msg  = msgs[idx];
+            if (!msg) return;
+
+            /* Mark read */
+            if (activeBox === "inbox" && !msg.read) {
+                msgs[idx].read = true;
+                saveInbox(msgs);
+            }
+            renderList();
+
+            var replies  = msg.replies || [];
+            var fromKey  = msg.fromKey || "";
+            var toKey    = msg.toKey   || "";
+
+            /* Determine if the current user can reply.
+               Accountant can reply only to messages received from Manager or Admin.
+               All other roles can always reply from inbox. */
+            var canReply = activeBox === "inbox";
+            /* For accountant: only allow reply if the original sender is manager or admin
+               (which is always true since accountant can only receive from those roles,
+               but we double-check to be safe) */
+            if (role === "accountant" && canReply) {
+                canReply = (fromKey === "managerInbox" || fromKey === "adminInbox");
+            }
+
+            function msgCard(m, fk, isReply) {
+                var sk   = isReply ? (m.fromKey || cfg.key) : fk;
+                var name = isReply ? (m.from || (KEY_META[sk] && KEY_META[sk].name) || "?") : m.from;
+                return '<div class="inbox-msg">' +
+                    '<div class="inbox-msg-hd">' +
+                    '<div class="inbox-msg-from-wrap">' +
+                    avDiv(sk, 28, "inbox-msg-av") +
+                    '<div><div class="inbox-msg-name">' + esc(name) + '</div>' +
+                    '<div class="inbox-msg-sub">'  + esc((KEY_META[sk] && KEY_META[sk].name) || name) + '</div></div>' +
+                    '</div>' +
+                    '<div class="inbox-msg-time">' + fmtFull(m.timestamp) + '</div>' +
+                    '</div>' +
+                    '<div class="inbox-msg-body">' + esc(m.message || "") + '</div></div>';
+            }
+
+            var html = '<div class="inbox-thread">' +
+                '<div class="inbox-thread-hd">' +
+                '<div class="inbox-thread-subject">' + esc(msg.subject || "(no subject)") + '</div>' +
+                '<div class="inbox-thread-meta">' +
+                '<span>From: <strong style="color:#94a3b8;">' + esc(msg.from) + '</strong></span>' +
+                '<span>To: <strong style="color:#94a3b8;">'   + esc(msg.to)   + '</strong></span>' +
+                '<span>' + fmtFull(msg.timestamp) + '</span>' +
+                '<span style="color:#475569;">' + replies.length + ' repl' + (replies.length === 1 ? 'y' : 'ies') + '</span>' +
+                '</div>' +
+                '</div>' +
+                '<div class="inbox-msgs" id="threadMsgs">' +
+                msgCard(msg, fromKey, false) +
+                replies.map(function(r) { return msgCard(r, r.fromKey || cfg.key, true); }).join("") +
+                '</div>';
+
+            if (canReply) {
+                html += '<div class="inbox-reply-zone">' +
+                    '<div class="inbox-reply-label">Reply — Ctrl+Enter to send</div>' +
+                    '<div class="inbox-reply-row">' +
+                    '<textarea class="inbox-reply-ta" id="replyTa" placeholder="Write your reply…"></textarea>' +
+                    '<button class="inbox-reply-btn" id="replyBtn">Send ↑</button>' +
+                    '</div></div>';
+            } else if (activeBox === "inbox") {
+                /* Show a notice if reply is blocked (shouldn't normally occur given routing) */
+                html += '<div class="inbox-restrict-notice">⚠ You cannot reply to this message.</div>';
+            }
+            html += '</div>';
+
+            document.getElementById("inboxMain").innerHTML = html;
+            var msgEl = document.getElementById("threadMsgs");
+            if (msgEl) msgEl.scrollTop = msgEl.scrollHeight;
+
+            if (canReply) {
+                document.getElementById("replyBtn").addEventListener("click", function() {
+                    var txt = document.getElementById("replyTa").value.trim();
+                    if (txt) sendReply(idx, txt, fromKey);
+                });
+                document.getElementById("replyTa").addEventListener("keydown", function(e) {
+                    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                        var txt = this.value.trim();
+                        if (txt) sendReply(idx, txt, fromKey);
+                    }
+                });
+            }
+        }
+
+        /* ── Send a reply ── */
+        function sendReply(idx, text, originalFromKey) {
+            var now   = new Date().toISOString();
+            var toName = (KEY_META[originalFromKey] && KEY_META[originalFromKey].name) || "?";
+            var reply = {
+                from: cfg.name, fromKey: cfg.key,
+                to: toName, toKey: originalFromKey,
+                message: text, timestamp: now
+            };
+
+            /* Append reply to our own copy of the thread */
+            var mine = getInbox();
+            if (!mine[idx].replies) mine[idx].replies = [];
+            mine[idx].replies.push(reply);
+            saveInbox(mine);
+
+            /* Deliver reply to the original sender's inbox thread */
+            var theirInbox = JSON.parse(localStorage.getItem(originalFromKey)) || [];
+            var thread = null;
+            for (var i = 0; i < theirInbox.length; i++) {
+                if (theirInbox[i].subject === mine[idx].subject &&
+                    theirInbox[i].toKey   === cfg.key) {
+                    thread = theirInbox[i]; break;
+                }
+            }
+            if (thread) {
+                if (!thread.replies) thread.replies = [];
+                thread.replies.push(Object.assign({}, reply, {read: false}));
+                thread.read = false;
+                localStorage.setItem(originalFromKey, JSON.stringify(theirInbox));
+                pushNotif(originalFromKey, cfg.name, "Re: " + mine[idx].subject);
+            }
+
+            /* Save a copy in our sent box */
+            var sent = getSent();
+            sent.push({
+                from: cfg.name, fromKey: cfg.key,
+                to: toName, toKey: originalFromKey,
+                subject: "Re: " + mine[idx].subject,
+                message: text, timestamp: now, read: true, replies: []
+            });
+            saveSent(sent);
+
+            toast("✓ Reply sent.", true);
+            openThread(idx);
+        }
+
+        /* ── Compose ── */
+        function openCompose() {
+            var sel = document.getElementById("cmpTo");
+            sel.innerHTML = '<option value="">— Select recipient —</option>' +
+                cfg.toKeys.map(function(k, i) {
+                    return '<option value="' + k + '">' + cfg.toNames[i] + '</option>';
+                }).join("");
+            document.getElementById("cmpSubject").value = "";
+            document.getElementById("cmpBody").value    = "";
+            document.getElementById("cmpErr").style.display = "none";
+            document.getElementById("cmpOverlay").classList.add("open");
+        }
+        function closeCompose() {
+            document.getElementById("cmpOverlay").classList.remove("open");
+        }
+
+        document.getElementById("openCompose").addEventListener("click", openCompose);
+        document.getElementById("cmpClose").addEventListener("click",  closeCompose);
+        document.getElementById("cmpCancel").addEventListener("click", closeCompose);
+        document.getElementById("cmpOverlay").addEventListener("click", function(e) {
+            if (e.target === this) closeCompose();
+        });
+
+        document.getElementById("cmpSend").addEventListener("click", function() {
+            var toKey   = document.getElementById("cmpTo").value;
+            var subject = document.getElementById("cmpSubject").value.trim();
+            var body    = document.getElementById("cmpBody").value.trim();
+            var errEl   = document.getElementById("cmpErr");
+            var errs    = [];
+            if (!toKey)   errs.push("Please select a recipient.");
+            if (!subject) errs.push("Subject is required.");
+            if (!body)    errs.push("Message cannot be empty.");
+
+            /* Enforce accountant restriction at send time as a safety net */
+            if (role === "accountant" && toKey !== "managerInbox") {
+                errs.push("Accountants can only send messages to the Manager.");
+            }
+
+            if (errs.length) {
+                errEl.innerHTML = errs.join("<br>");
+                errEl.style.display = "block";
+                return;
+            }
+            errEl.style.display = "none";
+
+            var now    = new Date().toISOString();
+            var toName = (KEY_META[toKey] && KEY_META[toKey].name) || toKey;
+            var obj    = {
+                from: cfg.name, fromKey: cfg.key,
+                to: toName, toKey: toKey,
+                subject: subject, message: body,
+                timestamp: now, read: false, replies: []
+            };
+
+            /* Deliver to recipient */
+            var ri = JSON.parse(localStorage.getItem(toKey)) || [];
+            ri.push(Object.assign({}, obj));
+            localStorage.setItem(toKey, JSON.stringify(ri));
+            pushNotif(toKey, cfg.name, subject);
+
+            /* Save to our sent */
+            var sent = getSent();
+            sent.push(Object.assign({}, obj, {read: true}));
+            saveSent(sent);
+
+            closeCompose();
+            toast("✓ Message sent to " + toName + ".", true);
+            switchBox("sent");
+        });
+
+        /* ── Tab switch ── */
+        function switchBox(box) {
+            activeBox = box;
+            activeIdx = -1;
+            document.querySelectorAll(".inbox-boxtab").forEach(function(b) {
+                b.classList.toggle("active", b.getAttribute("data-box") === box);
+            });
+            document.getElementById("inboxMain").innerHTML =
+                '<div class="inbox-blank">' +
+                '<div class="inbox-blank-icon">📬</div>' +
+                '<p>Select a message to read</p><span>or compose a new one</span></div>';
+            renderList();
+        }
+        document.querySelectorAll(".inbox-boxtab").forEach(function(btn) {
+            btn.addEventListener("click", function() { switchBox(this.getAttribute("data-box")); });
+        });
+
+        document.getElementById("inboxSearch").addEventListener("input", function() {
+            searchQ = this.value.toLowerCase();
+            renderList();
+        });
+
+        /* ── Init ── */
+        renderList();
+
+        /* Mark inbox_message notifications as read when any role opens their inbox */
+        var nk = NOTIF_STORE[cfg.key];
+        if (nk) {
+            var an = JSON.parse(localStorage.getItem(nk)) || [];
+            an.forEach(function(x) { if (x.type === "inbox_message") x.read = true; });
+            localStorage.setItem(nk, JSON.stringify(an));
+        }
+
+    }());
+</script>
+</body>
+</html>

@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Financial Reports — Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        .rpt-page { background:#080e1a; min-height:calc(100vh - 78px); font-family:'DM Sans',sans-serif; }
+        .rpt-topbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; padding:1.5rem 2.5rem 0; }
+        .rpt-topbar h1 { font-size:1.25rem; font-weight:700; color:#f1f5f9; margin:0; }
+        .rpt-topbar p  { font-size:0.8rem; color:#64748b; margin:4px 0 0; }
+        .rpt-controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:1rem 2.5rem; border-bottom:1px solid rgba(255,255,255,0.05); }
+        .rpt-controls label { font-size:0.72rem; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; color:#64748b; white-space:nowrap; }
+        .rpt-controls input[type="date"] { padding:7px 12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:#e2e8f0; font-size:0.82rem; cursor:pointer; color-scheme:dark; }
+        .rpt-controls input[type="date"]:focus { outline:none; border-color:#60a5fa; }
+        .rpt-sep { color:#334155; }
+        .rpt-btn { padding:7px 16px; font-size:0.78rem; font-weight:600; border-radius:6px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:opacity 0.15s, transform 0.15s; }
+        .rpt-btn:hover { opacity:0.85; transform:translateY(-1px); }
+        .rpt-btn:disabled { opacity:0.45; cursor:not-allowed; transform:none; }
+        .rpt-btn-generate { background:linear-gradient(135deg,#1d4ed8,#1e40af); color:#fff; }
+        .rpt-btn-save     { background:rgba(52,211,153,0.12); color:#34d399; border:1px solid rgba(52,211,153,0.25); }
+        .rpt-btn-print    { background:rgba(255,255,255,0.06); color:#94a3b8; border:1px solid rgba(255,255,255,0.1); }
+        .rpt-btn-email    { background:rgba(96,165,250,0.12); color:#60a5fa; border:1px solid rgba(96,165,250,0.25); }
+        .rpt-tabs { display:flex; gap:4px; padding:1rem 2.5rem 0; border-bottom:1px solid rgba(255,255,255,0.06); }
+        .rpt-tab { padding:8px 20px; font-size:0.82rem; font-weight:600; border-radius:8px 8px 0 0; border:none; cursor:pointer; background:transparent; color:#64748b; border-bottom:2px solid transparent; transition:color 0.15s, border-color 0.15s, background 0.15s; margin-bottom:-1px; }
+        .rpt-tab:hover  { color:#94a3b8; background:rgba(255,255,255,0.04); transform:none; }
+        .rpt-tab.active { color:#60a5fa; border-bottom-color:#60a5fa; background:rgba(96,165,250,0.06); }
+        .rpt-body { padding:1.5rem 2.5rem 3rem; }
+
+        /* ── Empty / loading / error states ── */
+        .rpt-empty { text-align:center; padding:4rem 2rem; }
+        .rpt-empty-icon { font-size:2.5rem; margin-bottom:0.75rem; opacity:0.4; }
+        .rpt-empty p    { font-size:0.9rem; color:#475569; margin:0; }
+        .rpt-empty span { font-size:0.78rem; color:#334155; }
+        .rpt-loading { text-align:center; padding:3rem 2rem; }
+        .rpt-loading-spinner { display:inline-block; width:28px; height:28px; border:3px solid rgba(96,165,250,0.2); border-top-color:#60a5fa; border-radius:50%; animation:spin 0.7s linear infinite; margin-bottom:1rem; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .rpt-loading p { font-size:0.85rem; color:#475569; margin:0; }
+
+        /* ── Report card ── */
+        .rpt-card { background:linear-gradient(140deg,#0d1a2e,#080e1a); border:1px solid rgba(255,255,255,0.07); border-radius:12px; overflow:hidden; max-width:820px; margin:0 auto; animation:rptFadeIn 0.25s ease; }
+        @keyframes rptFadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .rpt-card-header { padding:20px 28px 14px; border-bottom:1px solid rgba(255,255,255,0.06); text-align:center; }
+        .rpt-card-header h2 { font-size:1.1rem; font-weight:700; color:#f1f5f9; margin:0 0 4px; }
+        .rpt-card-header p  { font-size:0.8rem; color:#64748b; margin:0; }
+        .rpt-warn { color:#f87171; margin-top:6px; font-size:0.8rem; }
+
+        /* ── Data notice (no ledger entries) ── */
+        .rpt-data-notice { display:flex; align-items:flex-start; gap:10px; padding:12px 16px; background:rgba(251,191,36,0.07); border:1px solid rgba(251,191,36,0.2); border-radius:8px; margin:0 28px 0; font-size:0.8rem; color:#fbbf24; line-height:1.5; }
+        .rpt-data-notice svg { flex-shrink:0; margin-top:1px; }
+
+        /* ── Tables ── */
+        .rpt-table { width:100%; border-collapse:collapse; }
+        .rpt-table th { padding:9px 20px; text-align:left; font-size:0.7rem; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; color:#475569; background:rgba(255,255,255,0.03); border-bottom:1px solid rgba(255,255,255,0.06); }
+        .rpt-table th.right { text-align:right; }
+        .rpt-table td { padding:9px 20px; font-size:0.85rem; color:#cbd5e1; border-bottom:1px solid rgba(255,255,255,0.03); }
+        .rpt-table td.right  { text-align:right; font-family:'DM Mono',monospace; }
+        .rpt-table td.label  { color:#94a3b8; padding-left:36px; }
+        .rpt-table td.section-header { font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#475569; background:rgba(255,255,255,0.02); padding:10px 20px 6px; }
+        .rpt-table tr.total-row td { font-weight:700; color:#e2e8f0; border-top:1px solid rgba(255,255,255,0.1); border-bottom:2px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.02); }
+        .rpt-table tr.grand-total td { font-weight:700; font-size:0.9rem; color:#f1f5f9; border-top:2px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.04); }
+        .rpt-table tr.net-row td      { font-weight:700; color:#34d399; border-top:1px solid rgba(255,255,255,0.1); background:rgba(52,211,153,0.04); }
+        .rpt-table tr.net-row.loss td { color:#f87171; background:rgba(248,113,113,0.04); }
+        .rpt-pos { color:#34d399 !important; }
+        .rpt-neg { color:#f87171 !important; }
+        .rpt-zero { color:#334155 !important; }
+
+        /* ── Toast ── */
+        .rpt-toast { position:fixed; bottom:90px; right:28px; padding:10px 18px; border-radius:8px; font-size:0.82rem; font-weight:600; z-index:2000; display:none; animation:rptFadeIn 0.2s ease; }
+
+        /* ── Email modal ── */
+        .rpt-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(3px); z-index:1800; }
+        .rpt-modal-overlay.open { display:flex; align-items:center; justify-content:center; }
+        .rpt-modal { background:linear-gradient(160deg,#1a2740,#111e30); border:1px solid rgba(255,255,255,0.09); border-radius:12px; padding:28px 32px; width:440px; max-width:95vw; box-shadow:0 24px 60px rgba(0,0,0,0.5); }
+        .rpt-modal h3 { font-size:0.95rem; font-weight:700; color:#94a3b8; letter-spacing:0.05em; text-transform:uppercase; margin:0 0 18px; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.07); }
+        .rpt-modal label { display:block; font-size:0.72rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#64748b; margin-top:14px; margin-bottom:5px; }
+        .rpt-modal select, .rpt-modal textarea { width:100%; padding:9px 12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:#e2e8f0; font-size:0.875rem; font-family:'DM Sans',sans-serif; }
+        .rpt-modal select option { background:#1e293b; }
+        .rpt-modal textarea { resize:vertical; min-height:80px; }
+        .rpt-modal-actions { display:flex; gap:8px; margin-top:18px; }
+        .rpt-modal-actions button { flex:1; padding:10px; font-size:0.85rem; font-weight:600; border-radius:7px; border:none; cursor:pointer; }
+        .rpt-modal-send   { background:linear-gradient(135deg,#1d4ed8,#1e40af); color:#fff; }
+        .rpt-modal-cancel { background:transparent; border:1px solid rgba(255,255,255,0.12) !important; color:#94a3b8; }
+        .rpt-modal-error  { color:#f87171; font-size:0.8rem; margin-top:8px; display:none; }
+
+        /* ── Summary bar ── */
+        .rpt-summary { display:flex; gap:10px; flex-wrap:wrap; padding:14px 28px; border-bottom:1px solid rgba(255,255,255,0.04); background:rgba(255,255,255,0.015); }
+        .rpt-summary-chip { font-size:0.72rem; font-weight:600; letter-spacing:0.04em; padding:4px 10px; border-radius:20px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); color:#64748b; }
+        .rpt-summary-chip span { color:#e2e8f0; margin-left:4px; font-family:'DM Mono',monospace; }
+
+        @media print {
+            .navbar,.waffle-sidebar,.sidebar-overlay,.rpt-topbar,.rpt-controls,.rpt-tabs,.rpt-btn,.help-fab,.rpt-toast { display:none !important; }
+            .rpt-body { padding:0; }
+            .rpt-card { border:none; background:#fff; color:#000; max-width:100%; }
+            .rpt-card-header h2, .rpt-table td, .rpt-table th { color:#000 !important; }
+            body { background:#fff !important; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Waffle Sidebar -->
+<div id="waffleSidebar" class="waffle-sidebar">
+    <div class="waffle-sidebar-header">
+        <span class="waffle-sidebar-title">Navigation</span>
+        <button class="waffle-sidebar-close" id="waffleSidebarClose" data-tooltip="Close navigation menu">&#x2715;</button>
+    </div>
+    <nav class="waffle-nav" id="rptNav"></nav>
+    <div class="waffle-sidebar-footer">
+        <span class="waffle-role-badge" id="rptRoleBadge">—</span>
+    </div>
+</div>
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+<!-- Profile Dropdown -->
+<div id="profileDropdown" class="profile-dropdown">
+    <div class="profile-dropdown-header">
+        <div class="profile-dropdown-avatar" id="rptAvatar">—</div>
+        <div><div class="profile-dropdown-name" id="rptProfileName">—</div><div class="profile-dropdown-role" id="rptProfileRole">—</div></div>
+    </div>
+    <div class="profile-dropdown-divider"></div>
+    <a href="index.html" class="profile-dropdown-item"><span>⎋</span> Logout</a>
+</div>
+
+<!-- Navbar -->
+<header class="navbar">
+    <div class="nav-left">
+        <button class="waffle-btn" id="waffleBtn" data-tooltip="Open navigation menu">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </button>
+        <div class="nav-divider"></div>
+        <div class="nav-brand">
+            <img src="Assets/LogoFirstClass.png" alt="Logo" class="nav-logo">
+            <span class="site-name">First Class <span>Finance</span></span>
+        </div>
+    </div>
+    <div class="nav-right">
+        <div class="profile-trigger" id="profileTrigger" data-tooltip="Account options">
+            <img src="" alt="Profile" class="profile-icon" id="rptProfileImg">
+            <span class="profile-trigger-name" id="rptProfileTriggerName">—</span>
+            <span class="profile-trigger-caret">▾</span>
+        </div>
+    </div>
+</header>
+
+<div class="rpt-page">
+    <div class="rpt-topbar">
+        <div>
+            <h1>Financial Reports</h1>
+            <p>Generate trial balance, income statement, balance sheet, and retained earnings.</p>
+        </div>
+    </div>
+
+    <div class="rpt-controls">
+        <label>Date Range</label>
+        <input type="date" id="rptDateFrom" data-tooltip="Report start date">
+        <span class="rpt-sep">to</span>
+        <input type="date" id="rptDateTo" data-tooltip="Report end date">
+        <button class="rpt-btn rpt-btn-generate" id="rptGenerate" data-tooltip="Generate selected report">⚙ Generate</button>
+        <button class="rpt-btn rpt-btn-save"     id="rptSave"     data-tooltip="Save report snapshot to localStorage">💾 Save</button>
+        <button class="rpt-btn rpt-btn-print"    id="rptPrint"    data-tooltip="Print this report">🖨 Print</button>
+        <button class="rpt-btn rpt-btn-email"    id="rptEmail"    data-tooltip="Email report summary to admin or manager">✉ Email</button>
+    </div>
+
+    <div class="rpt-tabs">
+        <button class="rpt-tab active" data-report="trial">Trial Balance</button>
+        <button class="rpt-tab"        data-report="income">Income Statement</button>
+        <button class="rpt-tab"        data-report="balance">Balance Sheet</button>
+        <button class="rpt-tab"        data-report="retained">Retained Earnings</button>
+    </div>
+
+    <div class="rpt-body" id="rptBody">
+        <div class="rpt-empty">
+            <div class="rpt-empty-icon">📊</div>
+            <p>No report generated yet.</p>
+            <span>Select a date range and click <strong style="color:#60a5fa;">Generate</strong> to build the report.</span>
+        </div>
+    </div>
+</div>
+
+<div class="rpt-toast" id="rptToast"></div>
+
+<!-- Email Modal -->
+<div class="rpt-modal-overlay" id="rptEmailOverlay">
+    <div class="rpt-modal">
+        <h3>Email Report</h3>
+        <label>Send To</label>
+        <select id="rptEmailTo">
+            <option value="">— Select recipient —</option>
+        </select>
+        <label>Message (optional)</label>
+        <textarea id="rptEmailMsg" placeholder="Add a note to accompany the report…"></textarea>
+        <div class="rpt-modal-error" id="rptEmailError"></div>
+        <div class="rpt-modal-actions">
+            <button class="rpt-modal-send"   id="rptEmailSend">✉ Send</button>
+            <button class="rpt-modal-cancel" id="rptEmailCancel">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Help -->
+<button class="help-fab" id="helpBtn" data-tooltip="Open help">?</button>
+<div id="helpModal" class="help-modal">
+    <div class="help-modal-header">
+        <h2>Help — Financial Reports</h2>
+        <button class="help-modal-close" id="helpModalClose">&#x2715;</button>
+    </div>
+    <div class="help-topics">
+        <div class="help-topic">
+            <button class="help-topic-toggle active">📊 Generating Reports</button>
+            <div class="help-topic-body open"><ul>
+                <li><strong>Date Range</strong> — Filter ledger entries by date. Leave blank to use all approved entries ever posted.</li>
+                <li><strong>Generate</strong> — Pulls live data from approved journal entries and account balances.</li>
+                <li><strong>Data source</strong> — Reports read from both the opening account balance and posted ledger entries. If no entries exist in a date range, the opening balance is used.</li>
+                <li><strong>Yellow notice</strong> — Shown when no ledger entries exist yet; balances come from opening account balances only.</li>
+            </ul></div>
+        </div>
+        <div class="help-topic">
+            <button class="help-topic-toggle">📋 Report Definitions</button>
+            <div class="help-topic-body"><ul>
+                <li><strong>Trial Balance</strong> — All accounts with their total debits and credits. Debits must equal credits.</li>
+                <li><strong>Income Statement</strong> — Revenue − Expenses = Net Income / Loss.</li>
+                <li><strong>Balance Sheet</strong> — Assets = Liabilities + Equity.</li>
+                <li><strong>Retained Earnings</strong> — Opening RE + Net Income − Dividends = Ending RE.</li>
+            </ul></div>
+        </div>
+        <div class="help-topic">
+            <button class="help-topic-toggle">💾 Save / Print / Email</button>
+            <div class="help-topic-body"><ul>
+                <li><strong>Save</strong> — Saves a snapshot to localStorage with a timestamp.</li>
+                <li><strong>Print</strong> — Opens the browser print dialog showing only the report.</li>
+                <li><strong>Email</strong> — Delivers the summary to the Admin or Manager in-app inbox.</li>
+            </ul></div>
+        </div>
+    </div>
+</div>
+<div id="helpOverlay" class="help-overlay"></div>
+
+<script src="script.js"></script>
+<script>
+    (function () {
+        "use strict";
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // ── Role detection ────────────────────────────────────────────
+            const rawRole = localStorage.getItem("currentRole") || "";
+            const role    = rawRole === "administrator" ? "admin" : rawRole;
+
+            const ROLE_CFG = {
+                admin: {
+                    bodyClass:     "admin-page",
+                    avatar:        "A",
+                    avatarStyle:   "background:linear-gradient(135deg,#047857,#065f46);color:#a7f3d0;",
+                    name:          "Admin",
+                    label:         "Administrator",
+                    badgeStyle:    "color:#34d399;background:rgba(52,211,153,0.12);border-color:rgba(52,211,153,0.3);",
+                    img:           "Assets/ProfileAdminImage.png",
+                    nav: [
+                        {href:"admin.html",               icon:"⊞",  label:"Dashboard"},
+                        {href:"employee-management.html", icon:"👥", label:"Employee Management"},
+                        {href:"account-management.html",  icon:"📒", label:"Account Management"},
+                        {href:"access-requests.html",     icon:"🔔", label:"Access Requests"},
+                        {href:"reports.html",             icon:"📊", label:"Financial Reports", active:true},
+                        {href:"inbox.html",               icon:"📬", label:"Inbox"},
+                    ],
+                    emailRecipients: [
+                        {value:"managerInbox",    label:"Manager"},
+                        {value:"accountantInbox", label:"Accountant"},
+                    ],
+                    emailFromName: "Admin",
+                    acctMgmtHref:  "account-management.html"
+                },
+                manager: {
+                    bodyClass:     "manager-page",
+                    avatar:        "M",
+                    avatarStyle:   "background:linear-gradient(135deg,#1d4ed8,#1e40af);color:#bfdbfe;",
+                    name:          "Manager",
+                    label:         "Manager",
+                    badgeStyle:    "color:#60a5fa;background:rgba(96,165,250,0.12);border-color:rgba(96,165,250,0.3);",
+                    img:           "Assets/managerProfileImage.png",
+                    nav: [
+                        {href:"manager.html",                     icon:"⊞",  label:"Dashboard"},
+                        {href:"account-management-readonly.html", icon:"📒", label:"Chart of Accounts"},
+                        {href:"journal.html",                     icon:"📝", label:"Journal Transactions"},
+                        {href:"inbox.html",                       icon:"📬", label:"Inbox"},
+                        {href:"reports.html",                     icon:"📊", label:"Financial Reports", active:true},
+                    ],
+                    emailRecipients: [
+                        {value:"adminInbox",      label:"Admin"},
+                        {value:"accountantInbox", label:"Accountant"},
+                    ],
+                    emailFromName: "Manager",
+                    acctMgmtHref:  "account-management-readonly.html"
+                }
+            };
+
+            if (!role || !ROLE_CFG[role]) {
+                window.location.href = "index.html";
+                return;
+            }
+            const rcfg = ROLE_CFG[role];
+
+            // Apply role-based UI
+            document.body.className = rcfg.bodyClass;
+            document.getElementById("rptNav").innerHTML = rcfg.nav.map(n =>
+                `<a href="${n.href}" class="waffle-nav-item${n.active ? " active" : ""}"><span class="waffle-nav-icon">${n.icon}</span><span>${n.label}</span></a>`
+            ).join("");
+            const badge = document.getElementById("rptRoleBadge");
+            badge.textContent  = rcfg.label;
+            badge.style.cssText = rcfg.badgeStyle;
+            const av = document.getElementById("rptAvatar");
+            av.textContent  = rcfg.avatar;
+            av.style.cssText = rcfg.avatarStyle;
+            document.getElementById("rptProfileName").textContent        = rcfg.name;
+            document.getElementById("rptProfileRole").textContent        = rcfg.label;
+            document.getElementById("rptProfileImg").src                 = rcfg.img;
+            document.getElementById("rptProfileImg").alt                 = rcfg.name;
+            document.getElementById("rptProfileTriggerName").textContent = rcfg.name;
+
+            // Populate email recipients
+            const emailSel = document.getElementById("rptEmailTo");
+            emailSel.innerHTML = '<option value="">— Select recipient —</option>' +
+                rcfg.emailRecipients.map(r => `<option value="${r.value}">${r.label}</option>`).join("");
+
+            // ── State ────────────────────────────────────────────────────
+            let activeReport  = "trial";
+            let lastGenerated = null;
+
+            // ── Tab switching ─────────────────────────────────────────────
+            document.querySelectorAll(".rpt-tab").forEach(btn => {
+                btn.addEventListener("click", function () {
+                    document.querySelectorAll(".rpt-tab").forEach(b => b.classList.remove("active"));
+                    this.classList.add("active");
+                    activeReport = this.dataset.report;
+                    if (lastGenerated) generate();
+                });
+            });
+
+            // ── Formatters ────────────────────────────────────────────────
+            function fmt(n) {
+                const v = parseFloat(n) || 0;
+                return (v < 0 ? "-$" : "$") + Math.abs(v).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
+
+            function showToast(msg, type) {
+                const t = document.getElementById("rptToast");
+                t.textContent = msg;
+                const colors = {
+                    green: ["rgba(52,211,153,0.12)", "rgba(52,211,153,0.3)", "#34d399"],
+                    blue:  ["rgba(96,165,250,0.12)",  "rgba(96,165,250,0.3)",  "#60a5fa"],
+                    red:   ["rgba(248,113,113,0.12)", "rgba(248,113,113,0.3)", "#f87171"],
+                }[type] || colors.blue;
+                t.style.cssText = `display:block;background:${colors[0]};border:1px solid ${colors[1]};color:${colors[2]};padding:10px 18px;border-radius:8px;font-size:0.82rem;font-weight:600;position:fixed;bottom:90px;right:28px;z-index:2000;animation:rptFadeIn 0.2s ease;`;
+                clearTimeout(t._tid);
+                t._tid = setTimeout(() => t.style.display = "none", 3500);
+            }
+
+            // ── Data helpers — API-backed ─────────────────────────────────
+            let allAccounts     = [];   // loaded from /api/accounts/get-all-accounts
+            let allLedgerByAcct = {};   // { accountId: [ enrichedEntry, … ] }
+
+            async function fetchReportData() {
+                try {
+                    const [accts, ledgers] = await Promise.all([
+                        apiFetch("/accounts/get-all-accounts"),
+                        apiFetch("/ledger")
+                    ]);
+                    allAccounts = accts || [];
+                    // Group ledger entries by accountId
+                    allLedgerByAcct = {};
+                    (ledgers || []).forEach(e => {
+                        if (!allLedgerByAcct[e.accountId]) allLedgerByAcct[e.accountId] = [];
+                        allLedgerByAcct[e.accountId].push(e);
+                    });
+                } catch (err) {
+                    console.error("Failed to fetch report data:", err);
+                }
+            }
+
+            function getAccounts() { return allAccounts; }
+
+            function dateFrom() { return document.getElementById("rptDateFrom").value || null; }
+            function dateTo()   { return document.getElementById("rptDateTo").value   || null; }
+
+            function dateLabel() {
+                const f = dateFrom(), t = dateTo();
+                if (f && t) return `${f} to ${t}`;
+                if (f)      return `From ${f}`;
+                if (t)      return `As of ${t}`;
+                return "All Dates";
+            }
+
+            // ── Core balance engine ───────────────────────────────────────
+            // Returns { balance, dr, cr, hasEntries }
+            function getAccountData(acc) {
+                const entries    = allLedgerByAcct[acc.id] || [];
+                const f = dateFrom(), t = dateTo();
+
+                const inRange = entries.filter(e => {
+                    if (f && e.date < f) return false;
+                    if (t && e.date > t) return false;
+                    return true;
+                });
+
+                if (inRange.length > 0) {
+                    const last = inRange[inRange.length - 1];
+                    const dr   = inRange.reduce((s, e) => s + (parseFloat(e.debit)  || 0), 0);
+                    const cr   = inRange.reduce((s, e) => s + (parseFloat(e.credit) || 0), 0);
+                    return { balance: parseFloat(last.balance) || 0, dr, cr, hasEntries: true };
+                }
+
+                if (!f && !t && entries.length > 0) {
+                    const dr   = entries.reduce((s, e) => s + (parseFloat(e.debit)  || 0), 0);
+                    const cr   = entries.reduce((s, e) => s + (parseFloat(e.credit) || 0), 0);
+                    const last = entries[entries.length - 1];
+                    return { balance: parseFloat(last.balance) || 0, dr, cr, hasEntries: true };
+                }
+
+                // Fallback: stored account balance
+                return {
+                    balance:    parseFloat(acc.balance) || 0,
+                    dr:         parseFloat(acc.debit)   || 0,
+                    cr:         parseFloat(acc.credit)  || 0,
+                    hasEntries: false
+                };
+            }
+
+            function hasAnyLedgerEntries() {
+                return Object.values(allLedgerByAcct).some(entries => entries && entries.length > 0);
+            }
+
+            function dataNoticeHTML() {
+                return `
+            <div class="rpt-data-notice" style="margin:0 0 0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                No approved journal entries posted yet — balances shown are opening account balances. Approve journal entries in <a href="journal.html" style="color:#fbbf24;text-decoration:underline;">Journal Transactions</a> to populate this report with live data.
+            </div>`;
+            }
+
+            // ════════════════════════════════════════════════════════════
+            // TRIAL BALANCE
+            // ════════════════════════════════════════════════════════════
+            function buildTrialBalance() {
+                const accounts = getAccounts().filter(a => a.isActive);
+                let totalDr = 0, totalCr = 0;
+                let anyEntries = false;
+
+                const rows = accounts.map(acc => {
+                    const { dr, cr, hasEntries } = getAccountData(acc);
+                    totalDr += dr; totalCr += cr;
+                    if (hasEntries) anyEntries = true;
+                    return { name: acc.accountName, number: acc.accountNumber, category: acc.category, dr, cr, normalSide: acc.normalSide, balance: acc.balance };
+                });
+
+                lastGenerated = { type:"Trial Balance", rows, totalDr, totalCr, date: dateLabel() };
+
+                // If no entries anywhere, fall back to balance column
+                if (!anyEntries) {
+                    let bDr = 0, bCr = 0;
+                    rows.forEach(r => {
+                        const bal = parseFloat(r.balance) || 0;
+                        if (r.normalSide === "Debit")  { r.dr = bal; r.cr = 0; bDr += bal; }
+                        else                            { r.dr = 0; r.cr = bal; bCr += bal; }
+                    });
+                    totalDr = bDr; totalCr = bCr;
+                    lastGenerated.totalDr = totalDr; lastGenerated.totalCr = totalCr;
+                    lastGenerated.rows    = rows;
+                }
+
+                const balancedFinal = Math.abs(totalDr - totalCr) < 0.01;
+
+                return `
+            <div class="rpt-card">
+                <div class="rpt-card-header">
+                    <h2>Trial Balance</h2>
+                    <p>First Class Finance &nbsp;·&nbsp; ${dateLabel()}</p>
+                    ${!balancedFinal ? `<p class="rpt-warn">⚠ Out of balance — Difference: ${fmt(Math.abs(totalDr - totalCr))}</p>` : ""}
+                </div>
+                ${!anyEntries ? dataNoticeHTML() : ""}
+                <div class="rpt-summary">
+                    <div class="rpt-summary-chip">Total Debits <span>${fmt(totalDr)}</span></div>
+                    <div class="rpt-summary-chip">Total Credits <span>${fmt(totalCr)}</span></div>
+                    <div class="rpt-summary-chip">Status <span style="color:${balancedFinal?'#34d399':'#f87171'}">${balancedFinal ? "Balanced ✓" : "Out of Balance ✗"}</span></div>
+                </div>
+                <table class="rpt-table">
+                    <thead><tr>
+                        <th>#</th><th>Account Name</th><th>Category</th>
+                        <th class="right">Debit</th><th class="right">Credit</th>
+                    </tr></thead>
+                    <tbody>
+                        ${rows.map(r => `
+                        <tr>
+                            <td style="font-family:'DM Mono',monospace;color:#475569;font-size:0.78rem;">${r.number || "—"}</td>
+                            <td>${r.name}</td>
+                            <td><span style="font-size:0.7rem;color:#64748b;">${r.category}</span></td>
+                            <td class="right ${r.dr > 0 ? '' : 'rpt-zero'}">${r.dr > 0 ? fmt(r.dr) : "—"}</td>
+                            <td class="right ${r.cr > 0 ? '' : 'rpt-zero'}">${r.cr > 0 ? fmt(r.cr) : "—"}</td>
+                        </tr>`).join("")}
+                    </tbody>
+                    <tfoot>
+                        <tr class="grand-total">
+                            <td colspan="3">Totals</td>
+                            <td class="right">${fmt(totalDr)}</td>
+                            <td class="right">${fmt(totalCr)}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>`;
+            }
+
+            // ════════════════════════════════════════════════════════════
+            // INCOME STATEMENT
+            // ════════════════════════════════════════════════════════════
+            function buildIncomeStatement() {
+                const accounts = getAccounts().filter(a => a.isActive);
+                const revenues = accounts.filter(a => a.category === "Revenue");
+                const expenses = accounts.filter(a => a.category === "Expense");
+                let anyEntries = false;
+
+                const revRows = revenues.map(a => {
+                    const d = getAccountData(a);
+                    if (d.hasEntries) anyEntries = true;
+                    return { name: a.accountName, amt: d.balance };
+                });
+                const expRows = expenses.map(a => {
+                    const d = getAccountData(a);
+                    if (d.hasEntries) anyEntries = true;
+                    return { name: a.accountName, amt: d.balance };
+                });
+
+                const totalRev  = revRows.reduce((s, r) => s + r.amt, 0);
+                const totalExp  = expRows.reduce((s, r) => s + r.amt, 0);
+                const netIncome = totalRev - totalExp;
+                const isLoss    = netIncome < 0;
+
+                lastGenerated = { type:"Income Statement", revRows, expRows, totalRev, totalExp, netIncome, date: dateLabel() };
+
+                return `
+            <div class="rpt-card">
+                <div class="rpt-card-header">
+                    <h2>Income Statement</h2>
+                    <p>First Class Finance &nbsp;·&nbsp; ${dateLabel()}</p>
+                </div>
+                ${!anyEntries ? dataNoticeHTML() : ""}
+                <div class="rpt-summary">
+                    <div class="rpt-summary-chip">Revenue <span>${fmt(totalRev)}</span></div>
+                    <div class="rpt-summary-chip">Expenses <span>${fmt(totalExp)}</span></div>
+                    <div class="rpt-summary-chip">${isLoss?"Net Loss":"Net Income"} <span style="color:${isLoss?'#f87171':'#34d399'}">${fmt(netIncome)}</span></div>
+                </div>
+                <table class="rpt-table">
+                    <tbody>
+                        <tr><td class="section-header" colspan="2">Revenue</td></tr>
+                        ${revRows.map(r => `<tr><td class="label">${r.name}</td><td class="right">${fmt(r.amt)}</td></tr>`).join("") ||
+                `<tr><td class="label" style="color:#475569;font-style:italic;">No revenue accounts</td><td></td></tr>`}
+                        <tr class="total-row"><td>Total Revenue</td><td class="right">${fmt(totalRev)}</td></tr>
+
+                        <tr><td class="section-header" colspan="2">Expenses</td></tr>
+                        ${expRows.map(r => `<tr><td class="label">${r.name}</td><td class="right">${fmt(r.amt)}</td></tr>`).join("") ||
+                `<tr><td class="label" style="color:#475569;font-style:italic;">No expense accounts</td><td></td></tr>`}
+                        <tr class="total-row"><td>Total Expenses</td><td class="right">${fmt(totalExp)}</td></tr>
+                    </tbody>
+                    <tfoot>
+                        <tr class="net-row ${isLoss ? 'loss' : ''}">
+                            <td>${isLoss ? "Net Loss" : "Net Income"}</td>
+                            <td class="right">${fmt(netIncome)}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>`;
+            }
+
+            // ════════════════════════════════════════════════════════════
+            // BALANCE SHEET
+            // ════════════════════════════════════════════════════════════
+            function buildBalanceSheet() {
+                const accounts = getAccounts().filter(a => a.isActive);
+                const assets   = accounts.filter(a => a.category === "Asset");
+                const liabs    = accounts.filter(a => a.category === "Liability");
+                const equity   = accounts.filter(a => a.category === "Equity");
+                let anyEntries = false;
+
+                function mapRows(arr) {
+                    return arr.map(a => {
+                        const d = getAccountData(a);
+                        if (d.hasEntries) anyEntries = true;
+                        return { name: a.accountName, sub: a.subcategory, amt: d.balance };
+                    });
+                }
+
+                const assetRows  = mapRows(assets);
+                const liabRows   = mapRows(liabs);
+                const equityRows = mapRows(equity);
+
+                const totalAssets = assetRows.reduce((s, r)  => s + r.amt, 0);
+                const totalLiabs  = liabRows.reduce((s, r)   => s + r.amt, 0);
+                const totalEquity = equityRows.reduce((s, r) => s + r.amt, 0);
+                const totalLE     = totalLiabs + totalEquity;
+                const balanced    = Math.abs(totalAssets - totalLE) < 0.01;
+
+                lastGenerated = { type:"Balance Sheet", assetRows, liabRows, equityRows, totalAssets, totalLiabs, totalEquity, date: dateLabel() };
+
+                function section(label, rows, total) {
+                    return `
+                <tr><td class="section-header" colspan="2">${label}</td></tr>
+                ${rows.map(r => `<tr>
+                    <td class="label">${r.name}${r.sub ? ` <span style="color:#475569;font-size:0.75rem;">(${r.sub})</span>` : ""}</td>
+                    <td class="right">${fmt(r.amt)}</td>
+                </tr>`).join("") || `<tr><td class="label" style="color:#475569;font-style:italic;">No accounts</td><td></td></tr>`}
+                <tr class="total-row"><td>Total ${label}</td><td class="right">${fmt(total)}</td></tr>`;
+                }
+
+                return `
+            <div class="rpt-card">
+                <div class="rpt-card-header">
+                    <h2>Balance Sheet</h2>
+                    <p>First Class Finance &nbsp;·&nbsp; ${dateLabel()}</p>
+                    ${!balanced ? `<p class="rpt-warn">⚠ Assets ≠ Liabilities + Equity — Difference: ${fmt(Math.abs(totalAssets - totalLE))}</p>` : ""}
+                </div>
+                ${!anyEntries ? dataNoticeHTML() : ""}
+                <div class="rpt-summary">
+                    <div class="rpt-summary-chip">Assets <span>${fmt(totalAssets)}</span></div>
+                    <div class="rpt-summary-chip">Liabilities <span>${fmt(totalLiabs)}</span></div>
+                    <div class="rpt-summary-chip">Equity <span>${fmt(totalEquity)}</span></div>
+                    <div class="rpt-summary-chip">Balanced <span style="color:${balanced?'#34d399':'#f87171'}">${balanced ? "Yes ✓" : "No ✗"}</span></div>
+                </div>
+                <table class="rpt-table">
+                    <tbody>
+                        ${section("Assets", assetRows, totalAssets)}
+                        ${section("Liabilities", liabRows, totalLiabs)}
+                        ${section("Equity", equityRows, totalEquity)}
+                    </tbody>
+                    <tfoot>
+                        <tr class="grand-total">
+                            <td>Total Liabilities &amp; Equity</td>
+                            <td class="right ${balanced ? 'rpt-pos' : 'rpt-neg'}">${fmt(totalLE)}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>`;
+            }
+
+            // ════════════════════════════════════════════════════════════
+            // RETAINED EARNINGS
+            // ════════════════════════════════════════════════════════════
+            function buildRetainedEarnings() {
+                const accounts = getAccounts().filter(a => a.isActive);
+                const revenues = accounts.filter(a => a.category === "Revenue");
+                const expenses = accounts.filter(a => a.category === "Expense");
+                const reAccts  = accounts.filter(a =>
+                    a.category === "Equity" &&
+                    (a.accountName.toLowerCase().includes("retained") || a.statement === "RE")
+                );
+                let anyEntries = false;
+
+                const totalRev = revenues.reduce((s, a) => {
+                    const d = getAccountData(a);
+                    if (d.hasEntries) anyEntries = true;
+                    return s + d.balance;
+                }, 0);
+                const totalExp = expenses.reduce((s, a) => {
+                    const d = getAccountData(a);
+                    if (d.hasEntries) anyEntries = true;
+                    return s + d.balance;
+                }, 0);
+                const netIncome = totalRev - totalExp;
+                const openingRE = reAccts.reduce((s, a) => {
+                    const d = getAccountData(a);
+                    if (d.hasEntries) anyEntries = true;
+                    return s + d.balance;
+                }, 0);
+                const endingRE  = openingRE + netIncome;
+                const isLoss    = netIncome < 0;
+
+                lastGenerated = { type:"Retained Earnings", openingRE, netIncome, endingRE, date: dateLabel() };
+
+                return `
+            <div class="rpt-card">
+                <div class="rpt-card-header">
+                    <h2>Statement of Retained Earnings</h2>
+                    <p>First Class Finance &nbsp;·&nbsp; ${dateLabel()}</p>
+                </div>
+                ${!anyEntries ? dataNoticeHTML() : ""}
+                <div class="rpt-summary">
+                    <div class="rpt-summary-chip">Opening RE <span>${fmt(openingRE)}</span></div>
+                    <div class="rpt-summary-chip">${isLoss?"Net Loss":"Net Income"} <span style="color:${isLoss?'#f87171':'#34d399'}">${fmt(netIncome)}</span></div>
+                    <div class="rpt-summary-chip">Ending RE <span>${fmt(endingRE)}</span></div>
+                </div>
+                <table class="rpt-table">
+                    <tbody>
+                        <tr><td>Beginning Retained Earnings</td><td class="right">${fmt(openingRE)}</td></tr>
+                        <tr>
+                            <td class="label">${isLoss ? "Less: Net Loss" : "Add: Net Income"}</td>
+                            <td class="right ${isLoss ? 'rpt-neg' : 'rpt-pos'}">${fmt(netIncome)}</td>
+                        </tr>
+                        <tr class="total-row"><td>Less: Dividends Declared</td><td class="right">$0.00</td></tr>
+                    </tbody>
+                    <tfoot>
+                        <tr class="net-row ${endingRE < 0 ? 'loss' : ''}">
+                            <td>Ending Retained Earnings</td>
+                            <td class="right">${fmt(endingRE)}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>`;
+            }
+
+            // ── Generate ──────────────────────────────────────────────────
+            async function generate() {
+                const body = document.getElementById("rptBody");
+                const btn  = document.getElementById("rptGenerate");
+
+                body.innerHTML = `
+            <div class="rpt-loading">
+                <div class="rpt-loading-spinner"></div>
+                <p>Loading data…</p>
+            </div>`;
+                btn.disabled    = true;
+                btn.textContent = "⏳ Generating…";
+
+                try {
+                    await fetchReportData();
+
+                    const accounts = getAccounts().filter(a => a.isActive);
+                    if (!accounts.length) {
+                        body.innerHTML = `
+                    <div class="rpt-empty">
+                        <div class="rpt-empty-icon">📒</div>
+                        <p>No active accounts found.</p>
+                        <span>Add accounts in <a href="account-management.html" style="color:#60a5fa;">Account Management</a> first.</span>
+                    </div>`;
+                        return;
+                    }
+
+                    switch (activeReport) {
+                        case "trial":    body.innerHTML = buildTrialBalance();    break;
+                        case "income":   body.innerHTML = buildIncomeStatement(); break;
+                        case "balance":  body.innerHTML = buildBalanceSheet();    break;
+                        case "retained": body.innerHTML = buildRetainedEarnings();break;
+                    }
+                    lastGenerated = lastGenerated || {};
+                } catch (err) {
+                    body.innerHTML = `
+                <div class="rpt-empty">
+                    <div class="rpt-empty-icon">⚠</div>
+                    <p style="color:#f87171;">Error generating report.</p>
+                    <span>${err.message}</span>
+                </div>`;
+                    console.error("Report error:", err);
+                } finally {
+                    btn.disabled    = false;
+                    btn.textContent = "⚙ Generate";
+                }
+            }
+
+            document.getElementById("rptGenerate").addEventListener("click", generate);
+
+            // ── Save ──────────────────────────────────────────────────────
+            document.getElementById("rptSave").addEventListener("click", function () {
+                if (!lastGenerated) { showToast("Generate a report first.", "blue"); return; }
+                const saved = JSON.parse(localStorage.getItem("savedReports")) || [];
+                saved.push({ ...lastGenerated, savedAt: new Date().toISOString() });
+                localStorage.setItem("savedReports", JSON.stringify(saved));
+                showToast(`✓ ${lastGenerated.type} saved (${saved.length} total).`, "green");
+            });
+
+            // ── Print ─────────────────────────────────────────────────────
+            document.getElementById("rptPrint").addEventListener("click", function () {
+                if (!lastGenerated) { showToast("Generate a report first.", "blue"); return; }
+                window.print();
+            });
+
+            // ── Email modal ───────────────────────────────────────────────
+            const overlay    = document.getElementById("rptEmailOverlay");
+            const emailError = document.getElementById("rptEmailError");
+
+            document.getElementById("rptEmail").addEventListener("click", function () {
+                if (!lastGenerated) { showToast("Generate a report first.", "blue"); return; }
+                emailError.style.display = "none";
+                document.getElementById("rptEmailTo").value  = "";
+                document.getElementById("rptEmailMsg").value = "";
+                overlay.classList.add("open");
+            });
+
+            document.getElementById("rptEmailCancel").addEventListener("click", () => overlay.classList.remove("open"));
+            overlay.addEventListener("click", e => { if (e.target === overlay) overlay.classList.remove("open"); });
+
+            document.getElementById("rptEmailSend").addEventListener("click", function () {
+                const to  = document.getElementById("rptEmailTo").value;
+                const msg = document.getElementById("rptEmailMsg").value.trim();
+                if (!to) { emailError.textContent = "Please select a recipient."; emailError.style.display = "block"; return; }
+                emailError.style.display = "none";
+
+                const rpt         = lastGenerated;
+                const summary     = buildEmailSummary(rpt);
+                const toName      = (rcfg.emailRecipients.find(r => r.value === to) || {}).label || to;
+                const notifStores = { adminInbox:"adminNotifications", managerInbox:"managerNotifications", accountantInbox:"accountantNotifications" };
+                const inbox       = JSON.parse(localStorage.getItem(to)) || [];
+                inbox.push({
+                    from:      rcfg.emailFromName,
+                    to:        toName,
+                    subject:   `Financial Report: ${rpt.type} — ${rpt.date}`,
+                    message:   (msg ? msg + "\n\n" : "") + summary,
+                    timestamp: new Date().toISOString(),
+                    read:      false,
+                    replies:   []
+                });
+                localStorage.setItem(to, JSON.stringify(inbox));
+
+                if (notifStores[to]) {
+                    const notifs = JSON.parse(localStorage.getItem(notifStores[to])) || [];
+                    notifs.push({ type:"report_email", from:rcfg.emailFromName, report:rpt.type, timestamp:new Date().toISOString(), read:false });
+                    localStorage.setItem(notifStores[to], JSON.stringify(notifs));
+                }
+
+                overlay.classList.remove("open");
+                showToast(`✓ Report emailed to ${toName}.`, "green");
+            });
+
+            function buildEmailSummary(rpt) {
+                if (!rpt) return "";
+                const lines = [`${rpt.type}\nDate Range: ${rpt.date}\n`];
+                switch (rpt.type) {
+                    case "Trial Balance":
+                        lines.push(`Total Debits:  $${rpt.totalDr.toFixed(2)}`);
+                        lines.push(`Total Credits: $${rpt.totalCr.toFixed(2)}`);
+                        lines.push(Math.abs(rpt.totalDr - rpt.totalCr) < 0.01 ? "Status: BALANCED" : "Status: OUT OF BALANCE");
+                        break;
+                    case "Income Statement":
+                        lines.push(`Total Revenue:  $${rpt.totalRev.toFixed(2)}`);
+                        lines.push(`Total Expenses: $${rpt.totalExp.toFixed(2)}`);
+                        lines.push(`Net ${rpt.netIncome >= 0 ? "Income" : "Loss"}: $${Math.abs(rpt.netIncome).toFixed(2)}`);
+                        break;
+                    case "Balance Sheet":
+                        lines.push(`Total Assets:     $${rpt.totalAssets.toFixed(2)}`);
+                        lines.push(`Total Liabilities: $${rpt.totalLiabs.toFixed(2)}`);
+                        lines.push(`Total Equity:     $${rpt.totalEquity.toFixed(2)}`);
+                        break;
+                    case "Retained Earnings":
+                        lines.push(`Opening RE:  $${rpt.openingRE.toFixed(2)}`);
+                        lines.push(`Net Income:  $${rpt.netIncome.toFixed(2)}`);
+                        lines.push(`Ending RE:   $${rpt.endingRE.toFixed(2)}`);
+                        break;
+                }
+                return lines.join("\n");
+            }
+
+            // ── Default: no date filter so ALL approved entries are shown ──
+            // User can narrow with the date pickers after reviewing the full report
+            document.getElementById("rptDateFrom").value = "";
+            document.getElementById("rptDateTo").value   = "";
+
+            // Auto-generate on load
+            generate();
+        });
+
+    }());
+</script>
+</body>
+</html>

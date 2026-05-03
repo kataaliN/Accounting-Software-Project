@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Accountant Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body class="accountant-page">
+
+<!-- Waffle Sidebar -->
+<div id="waffleSidebar" class="waffle-sidebar">
+    <div class="waffle-sidebar-header">
+        <span class="waffle-sidebar-title">Navigation</span>
+        <button class="waffle-sidebar-close" id="waffleSidebarClose" data-tooltip="Close navigation menu">&#x2715;</button>
+    </div>
+    <nav class="waffle-nav">
+        <a href="accountant.html"                  class="waffle-nav-item active" data-page="accountant">
+            <span class="waffle-nav-icon">⊞</span><span>Dashboard</span>
+        </a>
+        <a href="account-management-readonly.html" class="waffle-nav-item" data-page="accounts">
+            <span class="waffle-nav-icon">📒</span><span>Chart of Accounts</span>
+        </a>
+        <a href="journal-accountant.html"          class="waffle-nav-item" data-page="journal">
+            <span class="waffle-nav-icon">✏️</span><span>Journal Entries</span>
+        </a>
+        <a href="inbox.html"                       class="waffle-nav-item" data-page="inbox">
+            <span class="waffle-nav-icon">📬</span><span>Inbox</span>
+        </a>
+    </nav>
+    <div class="waffle-sidebar-footer">
+        <span class="waffle-role-badge" style="color:#a78bfa;background:rgba(167,139,250,0.12);border-color:rgba(167,139,250,0.3);">Accountant</span>
+    </div>
+</div>
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+<!-- Profile Dropdown -->
+<div id="profileDropdown" class="profile-dropdown">
+    <div class="profile-dropdown-header">
+        <div class="profile-dropdown-avatar" style="background:linear-gradient(135deg,#6d28d9,#5b21b6);color:#ddd6fe;border-color:rgba(167,139,250,0.3);">A</div>
+        <div>
+            <div class="profile-dropdown-name">Accountant</div>
+            <div class="profile-dropdown-role">Accountant</div>
+        </div>
+    </div>
+    <div class="profile-dropdown-divider"></div>
+    <a href="index.html" class="profile-dropdown-item" data-tooltip="Sign out of the system"><span>⎋</span> Logout</a>
+</div>
+
+<!-- Help Modal -->
+<div id="helpModal" class="help-modal">
+    <div class="help-modal-header">
+        <h2>Help &amp; Documentation</h2>
+        <button class="help-modal-close" id="helpModalClose" data-tooltip="Close help">&#x2715;</button>
+    </div>
+    <div class="help-topics">
+        <div class="help-topic">
+            <button class="help-topic-toggle active">⊞ Accountant Dashboard</button>
+            <div class="help-topic-body open">
+                <p>Your workspace for recording and managing financial transactions.</p>
+                <ul>
+                    <li><strong>Chart of Accounts</strong> — View all financial accounts in read-only mode.</li>
+                    <li><strong>Journal Entries</strong> — Create and submit balanced journal transactions for manager review.</li>
+                    <li><strong>Reports</strong> — View financial summaries and generated statements.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="help-topic">
+            <button class="help-topic-toggle">📒 Chart of Accounts</button>
+            <div class="help-topic-body">
+                <ul>
+                    <li><strong>Search &amp; Filter</strong> — Narrow accounts by name, number, category, normal side, or status.</li>
+                    <li><strong>Click an account name</strong> — Goes to the full ledger page for that account.</li>
+                    <li><strong>Read-only</strong> — Editing is restricted to Administrators only.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="help-topic">
+            <button class="help-topic-toggle">✏️ Journal Entries</button>
+            <div class="help-topic-body">
+                <ul>
+                    <li><strong>Create entries</strong> — Select accounts from the chart of accounts, add debit and credit lines, and submit.</li>
+                    <li><strong>Must balance</strong> — Total debits must equal total credits before you can submit.</li>
+                    <li><strong>Multiple lines</strong> — Add multiple debit or credit lines for compound entries.</li>
+                    <li><strong>Reset</strong> — Clears the form. Once submitted, entries cannot be deleted.</li>
+                    <li><strong>View status</strong> — See all your submitted entries and their Pending / Approved / Rejected status.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="help-topic">
+            <button class="help-topic-toggle">📊 Reports</button>
+            <div class="help-topic-body">
+                <p>View income statements and balance sheets generated from posted journal entries.</p>
+            </div>
+        </div>
+        <div class="help-topic">
+            <button class="help-topic-toggle">🧭 Navigation</button>
+            <div class="help-topic-body">
+                <ul>
+                    <li><strong>Waffle menu (⠿)</strong> — Opens the navigation sidebar.</li>
+                    <li><strong>Profile menu</strong> — Click your name for Logout.</li>
+                    <li><strong>Help (?)</strong> — Opens this panel on any page.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="helpOverlay" class="help-overlay"></div>
+
+<!-- Calendar Popup -->
+<div id="calendarPopup" class="cal-popup">
+    <div class="cal-header">
+        <button class="cal-nav" id="calPrev" data-tooltip="Previous month">&#8249;</button>
+        <span class="cal-month-label" id="calMonthLabel"></span>
+        <button class="cal-nav" id="calNext" data-tooltip="Next month">&#8250;</button>
+    </div>
+    <div class="cal-weekdays">
+        <span>Su</span><span>Mo</span><span>Tu</span><span>We</span>
+        <span>Th</span><span>Fr</span><span>Sa</span>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-footer">
+        <button class="cal-today-btn" id="calTodayBtn" data-tooltip="Jump to today">Today</button>
+    </div>
+</div>
+
+<!-- Navbar -->
+<header class="navbar">
+    <div class="nav-left">
+        <button class="waffle-btn" id="waffleBtn" data-tooltip="Open navigation menu">
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+        </button>
+        <button class="cal-trigger-btn" id="calTriggerBtn" data-tooltip="Open calendar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+        </button>
+        <div class="nav-divider"></div>
+        <div class="nav-brand">
+            <img src="Assets/LogoFirstClass.png" class="nav-logo">
+            <span class="site-name">First Class <span>Finance</span></span>
+        </div>
+    </div>
+    <div class="nav-right">
+        <div class="profile-trigger" id="profileTrigger" data-tooltip="Account options">
+            <img src="Assets/accountantProfileImage.png" alt="Accountant Profile" class="profile-icon">
+            <span class="profile-trigger-name">Accountant</span>
+            <span class="profile-trigger-caret">▾</span>
+        </div>
+    </div>
+</header>
+
+<!-- Dashboard Body -->
+<main class="ac-dashboard">
+
+    <!-- Hero Banner -->
+    <div class="ac-banner">
+        <div class="ac-banner-bg"></div>
+        <div class="ac-banner-content">
+            <div class="ac-banner-left">
+                <span class="ac-role-chip">✦ Accountant</span>
+                <h1 class="ac-greeting">Good morning, <span>Accountant</span></h1>
+                <p class="ac-banner-sub">Here's your workspace for today. Stay balanced.</p>
+            </div>
+            <div class="ac-banner-stats">
+                <div class="ac-stat">
+                    <span class="ac-stat-value" id="statAccounts">—</span>
+                    <span class="ac-stat-label">Accounts</span>
+                </div>
+                <div class="ac-stat-divider"></div>
+                <div class="ac-stat">
+                    <span class="ac-stat-value" id="statPending">0</span>
+                    <span class="ac-stat-label">Pending Entries</span>
+                </div>
+                <div class="ac-stat-divider"></div>
+                <div class="ac-stat">
+                    <span class="ac-stat-value" id="statApproved">0</span>
+                    <span class="ac-stat-label">Approved</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Cards -->
+    <section class="ac-section">
+        <h2 class="ac-section-title">Your Tools</h2>
+        <div class="ac-cards">
+
+            <div class="ac-card" onclick="window.location.href='account-management-readonly.html'"
+                 data-tooltip="Browse the chart of accounts — read-only access">
+                <div class="ac-card-icon ac-icon-accounts">📒</div>
+                <div class="ac-card-body">
+                    <h3>Chart of Accounts</h3>
+                    <p>Browse and search the full chart of financial accounts.</p>
+                    <div class="ac-card-meta">
+                        <span class="ac-badge ac-badge-readonly">🔒 View Only</span>
+                    </div>
+                </div>
+                <div class="ac-card-arrow">→</div>
+            </div>
+
+            <div class="ac-card" onclick="window.location.href='journal-accountant.html'"
+                 data-tooltip="Create and submit balanced journal entries for manager approval">
+                <div class="ac-card-icon ac-icon-journal">✏️</div>
+                <div class="ac-card-body">
+                    <h3>Journal Entries</h3>
+                    <p>Record debit and credit transactions. Entries must balance before submission.</p>
+                    <div class="ac-card-meta">
+                        <span class="ac-badge ac-badge-action">Create Entry</span>
+                        <span id="pendingBadgeCard" style="display:none;font-size:0.68rem;font-weight:600;color:#fbbf24;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);padding:3px 8px;border-radius:4px;"></span>
+                    </div>
+                </div>
+                <div class="ac-card-arrow">→</div>
+            </div>
+
+            <div class="ac-card" onclick="window.location.href='reports.html'" data-tooltip="View financial summaries and generated statements">
+                <div class="ac-card-icon ac-icon-reports">📊</div>
+                <div class="ac-card-body">
+                    <h3>Reports</h3>
+                    <p>View income statements, balance sheets, and other financial summaries.</p>
+                    <div class="ac-card-meta">
+                        <span class="ac-badge ac-badge-action">View Reports</span>
+                    </div>
+                </div>
+                <div class="ac-card-arrow">→</div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Recent Activity -->
+    <section class="ac-section">
+        <h2 class="ac-section-title">Recent Journal Activity</h2>
+        <div class="ac-activity" id="recentActivity">
+            <div class="ac-activity-empty">
+                <span class="ac-activity-icon">📋</span>
+                <p>No recent activity yet.</p>
+                <span>Your submitted journal entries will appear here.</span>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- Help Button -->
+<button class="help-fab" id="helpBtn" data-tooltip="Open help documentation">?</button>
+
+<script src="script.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // ── Stats — loaded from the API ───────────────────────────
+        const currentUser = localStorage.getItem("currentUsername") || "Accountant1";
+
+        async function loadAccountantStats() {
+            try {
+                const [accounts, journals] = await Promise.all([
+                    apiFetch("/accounts/get-all-accounts").catch(() => []),
+                    apiFetch("/journal/journal-entries").catch(() => [])
+                ]);
+                const myEntries = journals.filter(j => j.creatorName === currentUser);
+                const pending   = myEntries.filter(j => j.journalStatus === "Pending").length;
+                const approved  = myEntries.filter(j => j.journalStatus === "Approved").length;
+
+                const el = document.getElementById("statAccounts");
+                if (el) el.textContent = accounts.length;
+                document.getElementById("statPending").textContent  = pending;
+                document.getElementById("statApproved").textContent = approved;
+
+                if (pending > 0) {
+                    const badge = document.getElementById("pendingBadgeCard");
+                    badge.textContent = `${pending} pending`;
+                    badge.style.display = "inline-block";
+                }
+
+                // ── Recent activity feed ──────────────────────────────
+                const activityEl = document.getElementById("recentActivity");
+                if (myEntries.length > 0) {
+                    const recent = [...myEntries].reverse().slice(0, 5);
+                    const sCls = { Pending:"jrn-status-pending", Approved:"jrn-status-approved", Rejected:"jrn-status-rejected" };
+                    activityEl.innerHTML = recent.map(j => {
+                        const drTotal = (j.journalLines || []).filter(l => l.entryType === "Debit").reduce((s, l) => s + l.amount, 0);
+                        const prStr   = "JE" + String(j.journalId).padStart(4, "0");
+                        const dateStr = j.entryDate ? j.entryDate.split("T")[0] : "—";
+                        return `
+                        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.04);gap:12px;flex-wrap:wrap;">
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <span style="font-family:'DM Mono',monospace;font-size:0.78rem;color:#a78bfa;">${prStr}</span>
+                                <span style="font-size:0.82rem;color:#94a3b8;">${dateStr}${j.journalName ? " — " + j.journalName : ""}</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span style="font-family:'DM Mono',monospace;font-size:0.82rem;color:#e2e8f0;">$${drTotal.toFixed(2)}</span>
+                                <span class="jrn-status-badge ${sCls[j.journalStatus]||""}">${j.journalStatus}</span>
+                            </div>
+                        </div>`;
+                    }).join("");
+                }
+            } catch (err) {
+                console.error("Failed to load accountant stats:", err);
+            }
+        }
+        loadAccountantStats();
+
+        // ── Dynamic greeting ─────────────────────────────────────
+        const hour    = new Date().getHours();
+        const greet   = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+        const greetEl = document.querySelector(".ac-greeting");
+        if (greetEl) greetEl.innerHTML = `${greet}, <span>Accountant</span>`;
+
+        // ── Calendar ─────────────────────────────────────────────
+        const calPopup    = document.getElementById("calendarPopup");
+        const calTrigger  = document.getElementById("calTriggerBtn");
+        const calPrev     = document.getElementById("calPrev");
+        const calNext     = document.getElementById("calNext");
+        const calTodayBtn = document.getElementById("calTodayBtn");
+        const calMonthLbl = document.getElementById("calMonthLabel");
+        const calGrid     = document.getElementById("calGrid");
+        const MONTHS      = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+        const today       = new Date();
+        let viewYear = today.getFullYear(), viewMonth = today.getMonth();
+
+        function renderCalendar() {
+            calMonthLbl.textContent = `${MONTHS[viewMonth]} ${viewYear}`;
+            calGrid.innerHTML = "";
+            const firstDay    = new Date(viewYear, viewMonth, 1).getDay();
+            const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+            const isCurrent   = viewYear === today.getFullYear() && viewMonth === today.getMonth();
+            for (let i = 0; i < firstDay; i++) { const b = document.createElement("span"); b.className = "cal-day cal-blank"; calGrid.appendChild(b); }
+            for (let d = 1; d <= daysInMonth; d++) {
+                const cell = document.createElement("span");
+                cell.className = "cal-day";
+                cell.textContent = d;
+                if (isCurrent && d === today.getDate()) cell.classList.add("cal-today");
+                calGrid.appendChild(cell);
+            }
+        }
+
+        calTrigger?.addEventListener("click",   e => { e.stopPropagation(); calPopup.classList.toggle("open"); });
+        calPrev?.addEventListener("click",      e => { e.stopPropagation(); viewMonth--; if (viewMonth < 0)  { viewMonth = 11; viewYear--; } renderCalendar(); });
+        calNext?.addEventListener("click",      e => { e.stopPropagation(); viewMonth++; if (viewMonth > 11) { viewMonth = 0;  viewYear++; } renderCalendar(); });
+        calTodayBtn?.addEventListener("click",  e => { e.stopPropagation(); viewYear = today.getFullYear(); viewMonth = today.getMonth(); renderCalendar(); });
+        document.addEventListener("click",     e => { if (!calPopup?.contains(e.target) && e.target !== calTrigger) calPopup?.classList.remove("open"); });
+        renderCalendar();
+    });
+</script>
+</body>
+</html>

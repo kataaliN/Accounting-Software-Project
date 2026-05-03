@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body class="admin-page">
+
+<!-- Waffle Sidebar -->
+<div id="waffleSidebar" class="waffle-sidebar">
+    <div class="waffle-sidebar-header">
+        <span class="waffle-sidebar-title">Navigation</span>
+        <button class="waffle-sidebar-close" id="waffleSidebarClose" data-tooltip="Close navigation menu">&#x2715;</button>
+    </div>
+    <nav class="waffle-nav">
+        <a href="admin.html"               class="waffle-nav-item active"><span class="waffle-nav-icon">⊞</span><span>Dashboard</span></a>
+        <a href="employee-management.html" class="waffle-nav-item"><span class="waffle-nav-icon">👥</span><span>Employee Management</span></a>
+        <a href="account-management.html"  class="waffle-nav-item"><span class="waffle-nav-icon">📒</span><span>Account Management</span></a>
+        <a href="access-requests.html"     class="waffle-nav-item"><span class="waffle-nav-icon">🔔</span><span>Access Requests</span></a>
+        <a href="reports.html"             class="waffle-nav-item"><span class="waffle-nav-icon">📊</span><span>Financial Reports</span></a>
+        <a href="inbox.html"               class="waffle-nav-item"><span class="waffle-nav-icon">📬</span><span>Inbox</span></a>
+    </nav>
+    <div class="waffle-sidebar-footer">
+        <span class="waffle-role-badge">Administrator</span>
+    </div>
+</div>
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+<!-- Profile Dropdown -->
+<div id="profileDropdown" class="profile-dropdown">
+    <div class="profile-dropdown-header">
+        <div class="profile-dropdown-avatar">A</div>
+        <div>
+            <div class="profile-dropdown-name">Admin</div>
+            <div class="profile-dropdown-role">Administrator</div>
+        </div>
+    </div>
+    <div class="profile-dropdown-divider"></div>
+    <a href="index.html" class="profile-dropdown-item"><span>⎋</span> Logout</a>
+</div>
+
+<!-- Help Modal -->
+<div id="helpModal" class="help-modal">
+    <div class="help-modal-header">
+        <h2>Help &amp; Documentation</h2>
+        <button class="help-modal-close" id="helpModalClose" data-tooltip="Close help">&#x2715;</button>
+    </div>
+    <div class="help-topics">
+        <div class="help-topic">
+            <button class="help-topic-toggle active">⊞ Dashboard</button>
+            <div class="help-topic-body open">
+                <p>The <strong>Administrator Dashboard</strong> is your central hub.</p>
+                <ul>
+                    <li><strong>Manage Employees</strong> — View, activate, deactivate, and invite employees.</li>
+                    <li><strong>Manage Accounts</strong> — Create and edit the chart of financial accounts.</li>
+                    <li><strong>Review Requests</strong> — Approve or reject pending employee access requests, including those submitted via the public Request Access form.</li>
+                    <li><strong>NEW badge</strong> — An orange NEW badge on Access Requests means someone submitted a request via the public form.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="help-topic">
+            <button class="help-topic-toggle">👥 Employee Management</button>
+            <div class="help-topic-body">
+                <ul>
+                    <li><strong>Current Employees table</strong> — Lists all employees with name, email, DOB, and status.</li>
+                    <li><strong>Activate / Deactivate</strong> — Toggle access without deleting the record.</li>
+                    <li><strong>New Employee</strong> — Submit details; routes to Access Requests for approval.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="help-topic">
+            <button class="help-topic-toggle">📒 Account Management</button>
+            <div class="help-topic-body">
+                <ul>
+                    <li><strong>Filter bar</strong> — Search by name, number, or description.</li>
+                    <li><strong>Click a row</strong> — Opens account details popup.</li>
+                    <li><strong>Edit Account</strong> — Load account into form for editing.</li>
+                    <li><strong>📋 Event Log</strong> — View before/after history for any account.</li>
+                    <li><strong>✉ Email User</strong> — Send a message to manager or accountant inbox.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="help-topic">
+            <button class="help-topic-toggle">🔔 Access Requests</button>
+            <div class="help-topic-body">
+                <ul>
+                    <li><strong>Public requests</strong> — Orange badge means submitted via the public form.</li>
+                    <li><strong>Approve</strong> — Grants Active status and moves to Employee Management.</li>
+                    <li><strong>Reject</strong> — Permanently removes the request.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="help-topic">
+            <button class="help-topic-toggle">🧭 Navigation</button>
+            <div class="help-topic-body">
+                <ul>
+                    <li><strong>Waffle menu (⠿)</strong> — Opens the navigation sidebar.</li>
+                    <li><strong>Profile menu</strong> — Click your name for Logout.</li>
+                    <li><strong>Help button (?)</strong> — Opens this panel.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="helpOverlay" class="help-overlay"></div>
+
+<!-- Calendar Popup -->
+<div id="calendarPopup" class="cal-popup">
+    <div class="cal-header">
+        <button class="cal-nav" id="calPrev" data-tooltip="Previous month">&#8249;</button>
+        <span class="cal-month-label" id="calMonthLabel"></span>
+        <button class="cal-nav" id="calNext" data-tooltip="Next month">&#8250;</button>
+    </div>
+    <div class="cal-weekdays">
+        <span>Su</span><span>Mo</span><span>Tu</span><span>We</span>
+        <span>Th</span><span>Fr</span><span>Sa</span>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-footer">
+        <button class="cal-today-btn" id="calTodayBtn" data-tooltip="Jump to today">Today</button>
+    </div>
+</div>
+
+<!-- Navbar -->
+<header class="navbar">
+    <div class="nav-left">
+        <button class="waffle-btn" id="waffleBtn" data-tooltip="Open navigation menu">
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+        </button>
+        <button class="cal-trigger-btn" id="calTriggerBtn" data-tooltip="Open calendar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8"  y1="2" x2="8"  y2="6"/>
+                <line x1="3"  y1="10" x2="21" y2="10"/>
+            </svg>
+        </button>
+        <div class="nav-divider"></div>
+        <div class="nav-brand">
+            <img src="Assets/LogoFirstClass.png" class="nav-logo">
+            <span class="site-name">First Class <span>Finance</span></span>
+        </div>
+    </div>
+    <div class="nav-right">
+        <div class="profile-trigger" id="profileTrigger" data-tooltip="Account options">
+            <img src="Assets/ProfileAdminImage.png" alt="Admin Profile" class="profile-icon">
+            <span class="profile-trigger-name">Admin</span>
+            <span class="profile-trigger-caret">▾</span>
+        </div>
+    </div>
+</header>
+
+<!-- Admin Dashboard -->
+<main class="ad-dashboard">
+
+    <!-- Hero Banner -->
+    <div class="ad-banner">
+        <div class="ad-banner-bg"></div>
+        <div class="ad-banner-content">
+            <div class="ad-banner-left">
+                <span class="ad-role-chip">⚙ Administrator</span>
+                <h1 class="ad-greeting">Good morning, <span>Admin</span></h1>
+                <p class="ad-banner-sub">Full system control — manage users, accounts, and access.</p>
+            </div>
+            <div class="ad-banner-stats">
+                <div class="ad-stat">
+                    <span class="ad-stat-value" id="adminStatEmployees">—</span>
+                    <span class="ad-stat-label">Employees</span>
+                </div>
+                <div class="ad-stat-divider"></div>
+                <div class="ad-stat">
+                    <span class="ad-stat-value" id="adminStatAccounts">—</span>
+                    <span class="ad-stat-label">Accounts</span>
+                </div>
+                <div class="ad-stat-divider"></div>
+                <div class="ad-stat">
+                    <span class="ad-stat-value" id="adminStatRequests">—</span>
+                    <span class="ad-stat-label">Pending</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Cards -->
+    <section class="ad-section">
+        <h2 class="ad-section-title">System Management</h2>
+        <div class="ad-cards">
+
+            <div class="ad-card" onclick="window.location.href='employee-management.html'"
+                 data-tooltip="View, invite, activate and deactivate system employees">
+                <div class="ad-card-icon ad-icon-employees">👥</div>
+                <div class="ad-card-body">
+                    <h3>Employee Management</h3>
+                    <p>Invite new employees, toggle active status, and manage system users.</p>
+                    <div class="ad-card-meta">
+                        <span class="ad-badge ad-badge-manage">Manage →</span>
+                        <span class="ad-badge-count" id="badgeEmployees">— active</span>
+                    </div>
+                </div>
+                <div class="ad-card-arrow">→</div>
+            </div>
+
+            <div class="ad-card" onclick="window.location.href='account-management.html'"
+                 data-tooltip="Create and edit the chart of financial accounts">
+                <div class="ad-card-icon ad-icon-accounts">📒</div>
+                <div class="ad-card-body">
+                    <h3>Account Management</h3>
+                    <p>Create, edit, and manage the full chart of financial accounts.</p>
+                    <div class="ad-card-meta">
+                        <span class="ad-badge ad-badge-manage">Manage →</span>
+                        <span class="ad-badge-count" id="badgeAccounts">— accounts</span>
+                    </div>
+                </div>
+                <div class="ad-card-arrow">→</div>
+            </div>
+
+            <div class="ad-card" onclick="window.location.href='access-requests.html'"
+                 data-tooltip="Approve or reject pending employee access requests">
+                <div class="ad-card-icon ad-icon-requests">🔔</div>
+                <div class="ad-card-body">
+                    <h3>Access Requests</h3>
+                    <p>Review and action pending signup requests from employees awaiting access.</p>
+                    <div class="ad-card-meta">
+                        <span class="ad-badge ad-badge-manage">Review →</span>
+                        <span class="ad-badge-count ad-badge-pending" id="badgeRequests">— pending</span>
+                    </div>
+                </div>
+                <div class="ad-card-arrow">→</div>
+            </div>
+
+            <div class="ad-card" onclick="window.location.href='reports.html'"
+                 data-tooltip="View income statements, balance sheets, and trial balance reports">
+                <div class="ad-card-icon ad-icon-reports">📊</div>
+                <div class="ad-card-body">
+                    <h3>Financial Reports</h3>
+                    <p>Generate and review income statements, balance sheets, and trial balance reports.</p>
+                    <div class="ad-card-meta">
+                        <span class="ad-badge ad-badge-manage">View →</span>
+                    </div>
+                </div>
+                <div class="ad-card-arrow">→</div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- System Overview -->
+    <section class="ad-section">
+        <h2 class="ad-section-title">System Overview</h2>
+        <div class="ad-overview">
+            <div class="ad-overview-item">
+                <span class="ad-overview-dot ad-dot-green"></span>
+                <span class="ad-overview-label">System Status</span>
+                <span class="ad-overview-value ad-value-green">Operational</span>
+            </div>
+            <div class="ad-overview-item">
+                <span class="ad-overview-dot ad-dot-blue"></span>
+                <span class="ad-overview-label">Active Employees</span>
+                <span class="ad-overview-value" id="overviewActive">—</span>
+            </div>
+            <div class="ad-overview-item">
+                <span class="ad-overview-dot ad-dot-amber"></span>
+                <span class="ad-overview-label">Pending Access Requests</span>
+                <span class="ad-overview-value" id="overviewPending">—</span>
+            </div>
+            <div class="ad-overview-item">
+                <span class="ad-overview-dot ad-dot-green"></span>
+                <span class="ad-overview-label">Total Accounts</span>
+                <span class="ad-overview-value" id="overviewAccounts">—</span>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- Help Button -->
+<button class="help-fab" id="helpBtn" data-tooltip="Open help documentation">?</button>
+
+<script src="script.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // ── Stats — loaded from the API ───────────────────────────────
+        async function loadAdminStats() {
+            try {
+                const [employees, accounts, accessReqs] = await Promise.all([
+                    apiFetch("/users").catch(() => []),
+                    apiFetch("/accounts/get-all-accounts").catch(() => []),
+                    apiFetch("/users/pending").catch(() => [])
+                ]);
+
+                const activeEmps  = employees.filter(e => e.isActive).length;
+                const pendingReqs = accessReqs.length;
+                const accountsLen = accounts.length;
+
+                document.getElementById("adminStatEmployees").textContent = employees.length;
+                document.getElementById("adminStatAccounts").textContent  = accountsLen;
+                document.getElementById("adminStatRequests").textContent  = pendingReqs;
+
+                document.getElementById("badgeEmployees").textContent = `${activeEmps} active`;
+                document.getElementById("badgeAccounts").textContent  = `${accountsLen} accounts`;
+                document.getElementById("badgeRequests").textContent  = `${pendingReqs} pending`;
+
+                document.getElementById("overviewActive").textContent   = activeEmps;
+                document.getElementById("overviewPending").textContent  = pendingReqs;
+                document.getElementById("overviewAccounts").textContent = accountsLen;
+
+                if (pendingReqs > 0) {
+                    document.getElementById("badgeRequests").classList.add("ad-badge-pending-alert");
+                }
+            } catch (err) {
+                console.error("Failed to load admin stats:", err);
+            }
+        }
+        loadAdminStats();
+
+        // ── Greeting ──────────────────────────────────────────────────
+        const hour    = new Date().getHours();
+        const greet   = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+        const greetEl = document.querySelector(".ad-greeting");
+        if (greetEl) greetEl.innerHTML = `${greet}, <span>Admin</span>`;
+
+        // ── Calendar ──────────────────────────────────────────────────
+        const calPopup    = document.getElementById("calendarPopup");
+        const calTrigger  = document.getElementById("calTriggerBtn");
+        const calPrev     = document.getElementById("calPrev");
+        const calNext     = document.getElementById("calNext");
+        const calTodayBtn = document.getElementById("calTodayBtn");
+        const calMonthLbl = document.getElementById("calMonthLabel");
+        const calGrid     = document.getElementById("calGrid");
+
+        const MONTHS = [
+            "January","February","March","April","May","June",
+            "July","August","September","October","November","December"
+        ];
+
+        const today = new Date();
+        let viewYear  = today.getFullYear();
+        let viewMonth = today.getMonth();
+
+        function renderCalendar() {
+            calMonthLbl.textContent = `${MONTHS[viewMonth]} ${viewYear}`;
+            calGrid.innerHTML = "";
+            const firstDay    = new Date(viewYear, viewMonth, 1).getDay();
+            const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+            const isCurrent   = viewYear === today.getFullYear() && viewMonth === today.getMonth();
+            for (let i = 0; i < firstDay; i++) {
+                const b = document.createElement("span");
+                b.className = "cal-day cal-blank";
+                calGrid.appendChild(b);
+            }
+            for (let d = 1; d <= daysInMonth; d++) {
+                const cell = document.createElement("span");
+                cell.className   = "cal-day";
+                cell.textContent = d;
+                if (isCurrent && d === today.getDate()) cell.classList.add("cal-today");
+                calGrid.appendChild(cell);
+            }
+        }
+
+        calTrigger.addEventListener("click", function (e) {
+            e.stopPropagation();
+            calPopup.classList.toggle("open");
+        });
+        calPrev.addEventListener("click", function (e) {
+            e.stopPropagation();
+            viewMonth--;
+            if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+            renderCalendar();
+        });
+        calNext.addEventListener("click", function (e) {
+            e.stopPropagation();
+            viewMonth++;
+            if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+            renderCalendar();
+        });
+        calTodayBtn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            viewYear  = today.getFullYear();
+            viewMonth = today.getMonth();
+            renderCalendar();
+        });
+        document.addEventListener("click", function (e) {
+            if (!calPopup.contains(e.target) && e.target !== calTrigger) {
+                calPopup.classList.remove("open");
+            }
+        });
+
+        renderCalendar();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Account Management</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Waffle Sidebar -->
+<div id="waffleSidebar" class="waffle-sidebar">
+    <div class="waffle-sidebar-header">
+        <span class="waffle-sidebar-title">Navigation</span>
+        <button class="waffle-sidebar-close" id="waffleSidebarClose">&#x2715;</button>
+    </div>
+    <nav class="waffle-nav">
+        <a href="admin.html"              class="waffle-nav-item"><span class="waffle-nav-icon">⊞</span><span>Dashboard</span></a>
+        <a href="employee-management.html" class="waffle-nav-item"><span class="waffle-nav-icon">👥</span><span>Employee Management</span></a>
+        <a href="account-management.html"  class="waffle-nav-item active"><span class="waffle-nav-icon">📒</span><span>Account Management</span></a>
+        <a href="access-requests.html"     class="waffle-nav-item"><span class="waffle-nav-icon">🔔</span><span>Access Requests</span></a>
+        <a href="reports.html"             class="waffle-nav-item"><span class="waffle-nav-icon">📊</span><span>Financial Reports</span></a>
+        <a href="inbox.html"               class="waffle-nav-item"><span class="waffle-nav-icon">📬</span><span>Inbox</span></a>
+    </nav>
+    <div class="waffle-sidebar-footer">
+        <span class="waffle-role-badge">Administrator</span>
+    </div>
+</div>
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+<!-- Profile Dropdown -->
+<div id="profileDropdown" class="profile-dropdown">
+    <div class="profile-dropdown-header">
+        <div class="profile-dropdown-avatar">A</div>
+        <div>
+            <div class="profile-dropdown-name">Admin</div>
+            <div class="profile-dropdown-role">Administrator</div>
+        </div>
+    </div>
+    <div class="profile-dropdown-divider"></div>
+    <a href="index.html" class="profile-dropdown-item"><span>⎋</span> Logout</a>
+</div>
+
+<!-- Navbar -->
+<header class="navbar">
+    <div class="nav-left">
+        <button class="waffle-btn" id="waffleBtn" data-tooltip="Open navigation menu">
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+        </button>
+        <div class="nav-divider"></div>
+        <div class="nav-brand">
+            <img src="Assets/LogoFirstClass.png" class="nav-logo">
+            <span class="site-name">First Class <span>Finance</span></span>
+        </div>
+    </div>
+    <div class="nav-right">
+        <div class="profile-trigger" id="profileTrigger" data-tooltip="Account options">
+            <img src="Assets/ProfileAdminImage.png" alt="Admin Profile" class="profile-icon">
+            <span class="profile-trigger-name">Admin</span>
+            <span class="profile-trigger-caret">▾</span>
+        </div>
+    </div>
+</header>
+
+<div class="page-container">
+
+    <!-- LEFT: Accounts table -->
+    <div class="left-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+            <h2 style="margin-bottom:0;">Accounts Management System</h2>
+            <!-- #3 Email button -->
+            <button id="emailUsersBtn" data-tooltip="Send an email to a manager or accountant"
+                    style="background:rgba(96,165,250,0.12);border:1px solid rgba(96,165,250,0.25);color:#60a5fa;
+                       font-size:0.78rem;font-weight:600;padding:6px 14px;border-radius:6px;margin:0;cursor:pointer;">
+                ✉ Email User
+            </button>
+        </div>
+
+        <div class="filter-bar">
+            <div class="filter-search-wrap">
+                <span class="filter-search-icon">⌕</span>
+                <input type="text" id="filterSearch" placeholder="Search by name, number, description…">
+            </div>
+            <select id="filterCategory">
+                <option value="">All Categories</option>
+                <option value="Asset">Asset</option>
+                <option value="Liability">Liability</option>
+                <option value="Equity">Equity</option>
+                <option value="Revenue">Revenue</option>
+                <option value="Expense">Expense</option>
+            </select>
+            <select id="filterNormalSide">
+                <option value="">All Sides</option>
+                <option value="Debit">Debit</option>
+                <option value="Credit">Credit</option>
+            </select>
+            <select id="filterStatus">
+                <option value="">All Statuses</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+            </select>
+            <button type="button" id="filterClearBtn" data-tooltip="Clear all active filters">Clear</button>
+        </div>
+
+        <table id="accountsTable">
+            <thead>
+            <tr>
+                <th>Account Name</th>
+                <th>Account #</th>
+                <th>Description</th>
+                <th>Normal Side</th>
+                <th>Category</th>
+                <th>Subcategory</th>
+                <th>Debit</th>
+                <th>Credit</th>
+                <th>Balance</th>
+                <th>Date Added</th>
+                <th>User ID</th>
+                <th>Order</th>
+                <th>Statement</th>
+                <th>Comment</th>
+                <th>Status</th>
+                <th>Event Log</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- RIGHT: Create / Edit form -->
+    <div class="right-panel">
+        <h2>Create Account</h2>
+        <form id="createAccountForm">
+            <label>Account Name</label>
+            <input type="text" id="accountName" required>
+
+            <label>Account Number</label>
+            <input type="number" id="accountNumber" required>
+
+            <label>Account Description</label>
+            <textarea id="accountDescription"></textarea>
+
+            <label>Normal Side</label>
+            <select id="normalSide">
+                <option value="Debit">Debit</option>
+                <option value="Credit">Credit</option>
+            </select>
+
+            <label>Account Category</label>
+            <select id="accountCategory">
+                <option value="Asset">Asset</option>
+                <option value="Liability">Liability</option>
+                <option value="Equity">Equity</option>
+                <option value="Revenue">Revenue</option>
+                <option value="Expense">Expense</option>
+            </select>
+
+            <label>Account Subcategory</label>
+            <input type="text" id="accountSubcategory">
+
+            <label>Initial Balance</label>
+            <input type="number" step="0.01" id="initialBalance" required>
+
+            <label>Debit</label>
+            <input type="number" step="0.01" id="debit">
+
+            <label>Credit</label>
+            <input type="number" step="0.01" id="credit">
+
+            <label>Balance</label>
+            <input type="number" step="0.01" id="balance" readonly>
+
+            <label>Date Added</label>
+            <input type="datetime-local" id="dateAdded">
+
+            <label>User ID</label>
+            <input type="text" id="userId" required>
+
+            <label>Order</label>
+            <input type="number" id="accountOrder">
+
+            <label>Statement Type</label>
+            <select id="statementType">
+                <option value="IS">Income Statement (IS)</option>
+                <option value="BS">Balance Sheet (BS)</option>
+                <option value="RE">Retained Earnings (RE)</option>
+            </select>
+
+            <label>Comment</label>
+            <textarea id="comment"></textarea>
+
+            <button type="submit" data-tooltip="Save and add this account to the chart of accounts">Create Account</button>
+            <button type="button" id="cancelEditBtn" style="display:none;"
+                    data-tooltip="Discard changes and return to create mode">Cancel Edit</button>
+        </form>
+    </div>
+</div>
+
+<!-- Ledger Modal -->
+<div id="ledgerModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Account Details</h3>
+        <div id="ledgerContent"></div>
+    </div>
+</div>
+
+<!-- ✉ Email Compose Modal (#3) -->
+<div id="emailModal" class="modal">
+    <div class="modal-content" style="max-width:480px;">
+        <span class="close" id="emailModalClose">&times;</span>
+        <h3>Send Email to User</h3>
+        <div style="margin-bottom:1rem;font-size:0.82rem;color:#64748b;">
+            Compose a message to a manager or accountant. The email is sent directly via EmailJS.
+        </div>
+
+        <!-- Success/error toast inside modal -->
+        <div id="emailToast" style="display:none;"></div>
+
+        <div style="display:flex;flex-direction:column;gap:0;">
+            <label style="font-size:0.72rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#64748b;margin-top:4px;margin-bottom:5px;">To</label>
+            <select id="emailTo" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#e2e8f0;font-size:0.875rem;">
+                <option value="">— Select recipient —</option>
+                <option value="manager">Manager</option>
+                <option value="accountant">Accountant</option>
+            </select>
+
+            <label style="font-size:0.72rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#64748b;margin-top:14px;margin-bottom:5px;">Subject</label>
+            <input type="text" id="emailSubject" placeholder="e.g. Chart of Accounts Update"
+                   style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#e2e8f0;font-size:0.875rem;">
+
+            <label style="font-size:0.72rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#64748b;margin-top:14px;margin-bottom:5px;">Message</label>
+            <textarea id="emailBody" rows="5" placeholder="Type your message here…"
+                      style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#e2e8f0;font-size:0.875rem;resize:vertical;min-height:110px;"></textarea>
+
+            <div id="emailError" style="display:none;margin-top:10px;padding:8px 12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px;color:#f87171;font-size:0.82rem;line-height:1.6;"></div>
+
+            <div style="display:flex;gap:8px;margin-top:16px;">
+                <button id="emailSendBtn" data-tooltip="Send email via EmailJS"
+                        style="flex:1;background:linear-gradient(135deg,#1d4ed8,#1e40af);margin:0;font-weight:600;">
+                    ✉ Send Email
+                </button>
+                <button id="emailCancelBtn" data-tooltip="Cancel and close"
+                        style="flex:0 0 auto;background:transparent;border:1px solid rgba(255,255,255,0.12);color:#94a3b8;padding:10px 16px;margin:0;">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Help Modal -->
+<div id="helpModal" class="help-modal">
+    <div class="help-modal-header">
+        <h2>Help &amp; Documentation</h2>
+        <button class="help-modal-close" id="helpModalClose" data-tooltip="Close help">&#x2715;</button>
+    </div>
+    <div class="help-topics">
+        <div class="help-topic">
+            <button class="help-topic-toggle active">📒 Account Management</button>
+            <div class="help-topic-body open">
+                <ul>
+                    <li><strong>Search &amp; filters</strong> — Filter by name, number, category, normal side, or status.</li>
+                    <li><strong>Click a row</strong> — Opens the account details popup with an Edit and View Ledger button.</li>
+                    <li><strong>Edit Account</strong> — Loads account into form; row highlights green while editing.</li>
+                    <li><strong>Cancel Edit</strong> — Discards changes and returns to create mode.</li>
+                    <li><strong>📋 Event Log</strong> — Click the log icon on any row to see the full before/after history for that account, including who made each change and when.</li>
+                    <li><strong>✉ Email User</strong> — Compose and send a message to a manager or accountant via your email client.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="help-topic">
+            <button class="help-topic-toggle">📋 Event Logs</button>
+            <div class="help-topic-body">
+                <p>Every account change is recorded automatically.</p>
+                <ul>
+                    <li><strong>Created</strong> — First-time creation shows all fields with no "before" image.</li>
+                    <li><strong>Modified</strong> — Shows only the fields that changed, with before (red) and after (green) values.</li>
+                    <li><strong>Journal Posted</strong> — When a journal entry is approved, the balance change is recorded with the approver's name and timestamp.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="help-topic">
+            <button class="help-topic-toggle">🧭 Navigation</button>
+            <div class="help-topic-body">
+                <ul>
+                    <li><strong>Waffle menu (⠿)</strong> — Opens the navigation sidebar.</li>
+                    <li><strong>Profile menu</strong> — Click your name or avatar for Logout.</li>
+                    <li><strong>Help button (?)</strong> — Opens this panel.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="helpOverlay" class="help-overlay"></div>
+
+<!-- Help Button -->
+<button class="help-fab" id="helpBtn" data-tooltip="Open help documentation">?</button>
+
+<script src="emailjs-config.js"></script>
+<script src="emailjs-service.js"></script>
+<script src="script.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // ── Patch admin accounts table with Event Log column ──────
+        const adminThead = document.querySelector("#accountsTable thead tr");
+        if (adminThead && adminThead.querySelectorAll("th").length === 15) {
+            const th = document.createElement("th");
+            th.textContent = "Event Log";
+            adminThead.appendChild(th);
+        }
+
+        function patchAdminRows() {
+            document.querySelectorAll("#accountsTable tbody tr[data-index]").forEach(row => {
+                if (row.lastElementChild?.querySelector("a")) return;
+                const idx = row.getAttribute("data-index");
+                const acc = (JSON.parse(localStorage.getItem("accounts")) || [])[idx];
+                if (!acc) return;
+                const td = document.createElement("td");
+                td.innerHTML = `<a href="event-log.html?account=${encodeURIComponent(acc.accountName)}"
+                style="color:#a78bfa;text-decoration:none;font-size:0.8rem;"
+                data-tooltip="View event log for ${acc.accountName}"
+                onclick="event.stopPropagation();">📋 Log</a>`;
+                row.appendChild(td);
+            });
+        }
+
+        const _orig = window.renderAccounts;
+        window.renderAccounts = function () { _orig && _orig(); setTimeout(patchAdminRows, 0); };
+        setTimeout(patchAdminRows, 50);
+
+        // ── Email Modal ───────────────────────────────────────────
+        const emailModal      = document.getElementById("emailModal");
+        const emailModalClose = document.getElementById("emailModalClose");
+        const emailCancelBtn  = document.getElementById("emailCancelBtn");
+        const emailSendBtn    = document.getElementById("emailSendBtn");
+        const emailError      = document.getElementById("emailError");
+        const emailToast      = document.getElementById("emailToast");
+
+        function showEmailToast(msg, type) {
+            emailToast.textContent = msg;
+            emailToast.style.cssText = type === "success"
+                ? "display:block;padding:10px 14px;border-radius:7px;font-size:0.82rem;font-weight:500;margin-bottom:12px;background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.3);color:#34d399;"
+                : "display:block;padding:10px 14px;border-radius:7px;font-size:0.82rem;font-weight:500;margin-bottom:12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.35);color:#f87171;";
+            setTimeout(() => emailToast.style.display = "none", 6000);
+        }
+
+        document.getElementById("emailUsersBtn").addEventListener("click", () => {
+            emailModal.style.display = "block";
+            emailError.style.display = "none";
+            emailToast.style.display = "none";
+        });
+
+        function closeEmailModal() {
+            emailModal.style.display = "none";
+            document.getElementById("emailTo").value      = "";
+            document.getElementById("emailSubject").value = "";
+            document.getElementById("emailBody").value    = "";
+            emailError.style.display = "none";
+        }
+
+        emailModalClose.addEventListener("click", closeEmailModal);
+        emailCancelBtn.addEventListener("click",  closeEmailModal);
+        window.addEventListener("click", e => { if (e.target === emailModal) closeEmailModal(); });
+
+        // Clear errors on input
+        ["emailTo","emailSubject","emailBody"].forEach(id => {
+            document.getElementById(id)?.addEventListener("input", () => {
+                emailError.style.display = "none";
+            });
+        });
+
+        emailSendBtn.addEventListener("click", async function () {
+            const recipientKey = document.getElementById("emailTo").value.trim();
+            const subject      = document.getElementById("emailSubject").value.trim();
+            const body         = document.getElementById("emailBody").value.trim();
+
+            // Validate
+            const errs = [];
+            if (!recipientKey) errs.push("Please select a recipient.");
+            if (!subject)      errs.push("Subject is required.");
+            if (!body)         errs.push("Message body cannot be empty.");
+
+            if (errs.length) {
+                emailError.innerHTML    = errs.map(e => `• ${e}`).join("<br>");
+                emailError.style.display = "block";
+                return;
+            }
+            emailError.style.display = "none";
+
+            // Map key to real email + display name
+            const recipientMap = {
+                manager:    { email: USER_EMAILS.manager,    name: "Manager"    },
+                accountant: { email: USER_EMAILS.accountant, name: "Accountant" },
+            };
+            const recipient = recipientMap[recipientKey];
+            if (!recipient) { emailError.innerHTML = "Invalid recipient."; emailError.style.display = "block"; return; }
+
+            // Disable button while sending
+            emailSendBtn.textContent = "Sending…";
+            emailSendBtn.disabled    = true;
+
+            try {
+                await sendEmail(recipient.email, recipient.name, subject, body, "Admin — First Class Finance");
+
+                // Store notification so recipient sees it in-app
+                const notifKey = recipientKey === "manager" ? "managerNotifications" : "accountantNotifications";
+                const notifs   = JSON.parse(localStorage.getItem(notifKey)) || [];
+                notifs.push({
+                    type:      "admin_email",
+                    from:      "Admin1",
+                    subject,
+                    message:   body,
+                    timestamp: new Date().toISOString(),
+                    read:      false
+                });
+                localStorage.setItem(notifKey, JSON.stringify(notifs));
+
+                closeEmailModal();
+                showEmailToast(`✓ Email sent to ${recipient.name} (${recipient.email})`, "success");
+
+            } catch (err) {
+                console.error("EmailJS error:", err);
+                emailError.innerHTML     = `Email failed to send. Check your EmailJS configuration in emailjs-config.js.<br><small style="color:#94a3b8;">${err?.text || err?.message || "Unknown error"}</small>`;
+                emailError.style.display = "block";
+            }
+
+            emailSendBtn.textContent = "✉ Send Email";
+            emailSendBtn.disabled    = false;
+        });
+    });
+</script>
+</body>
+</html>

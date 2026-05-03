@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Journal Entries — Accountant</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body class="accountant-page">
+
+<!-- Waffle Sidebar -->
+<div id="waffleSidebar" class="waffle-sidebar">
+    <div class="waffle-sidebar-header">
+        <span class="waffle-sidebar-title">Navigation</span>
+        <button class="waffle-sidebar-close" id="waffleSidebarClose" data-tooltip="Close navigation menu">&#x2715;</button>
+    </div>
+    <nav class="waffle-nav">
+        <a href="accountant.html"                  class="waffle-nav-item"><span class="waffle-nav-icon">⊞</span><span>Dashboard</span></a>
+        <a href="account-management-readonly.html" class="waffle-nav-item"><span class="waffle-nav-icon">📒</span><span>Chart of Accounts</span></a>
+        <a href="journal-accountant.html"          class="waffle-nav-item active"><span class="waffle-nav-icon">✏️</span><span>Journal Entries</span></a>
+        <a href="inbox.html"                       class="waffle-nav-item"><span class="waffle-nav-icon">📬</span><span>Inbox</span></a>
+    </nav>
+    <div class="waffle-sidebar-footer">
+        <span class="waffle-role-badge" style="color:#a78bfa;background:rgba(167,139,250,0.12);border-color:rgba(167,139,250,0.3);">Accountant</span>
+    </div>
+</div>
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+<!-- Profile Dropdown -->
+<div id="profileDropdown" class="profile-dropdown">
+    <div class="profile-dropdown-header">
+        <div class="profile-dropdown-avatar" style="background:linear-gradient(135deg,#6d28d9,#5b21b6);color:#ddd6fe;">A</div>
+        <div><div class="profile-dropdown-name">Accountant</div><div class="profile-dropdown-role">Accountant</div></div>
+    </div>
+    <div class="profile-dropdown-divider"></div>
+    <a href="index.html" class="profile-dropdown-item"><span>⎋</span> Logout</a>
+</div>
+
+<!-- Navbar -->
+<header class="navbar">
+    <div class="nav-left">
+        <button class="waffle-btn" id="waffleBtn" data-tooltip="Open navigation menu">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </button>
+        <div class="nav-divider"></div>
+        <div class="nav-brand">
+            <img src="Assets/LogoFirstClass.png" alt="Logo" class="nav-logo">
+            <span class="site-name">First Class <span>Finance</span></span>
+        </div>
+    </div>
+    <div class="nav-right">
+        <div class="profile-trigger" id="profileTrigger" data-tooltip="Account options">
+            <img src="Assets/accountantProfileImage.png" alt="Accountant" class="profile-icon">
+            <span class="profile-trigger-name">Accountant</span>
+            <span class="profile-trigger-caret">▾</span>
+        </div>
+    </div>
+</header>
+
+<main class="jrn-layout">
+
+    <!-- ── LEFT: View entries ──────────────────────────────────── -->
+    <div class="jrn-left">
+        <div class="jrn-tabs">
+            <button class="jrn-tab active" data-tab="all"      data-tooltip="All journal entries">All</button>
+            <button class="jrn-tab"        data-tab="Pending"  data-tooltip="Awaiting manager approval">Pending</button>
+            <button class="jrn-tab"        data-tab="Approved" data-tooltip="Approved entries">Approved</button>
+            <button class="jrn-tab"        data-tab="Rejected" data-tooltip="Rejected — check comment">Rejected</button>
+        </div>
+
+        <div class="jrn-filter-bar">
+            <div class="filter-search-wrap" style="flex:1;">
+                <span class="filter-search-icon">⌕</span>
+                <input type="text" id="ac-jrnSearch" placeholder="Search by account, amount, or description…">
+            </div>
+            <input type="date" id="ac-jrnDateFrom" data-tooltip="Filter from date">
+            <span style="color:#475569;font-size:0.8rem;">to</span>
+            <input type="date" id="ac-jrnDateTo"   data-tooltip="Filter to date">
+            <button id="ac-jrnClearFilter" data-tooltip="Clear all filters">Clear</button>
+        </div>
+
+        <div class="jrn-table-wrap">
+            <table id="ac-journalTable">
+                <thead>
+                <tr>
+                    <th>PR</th><th>Date</th><th>Description</th>
+                    <th>Debits</th><th>Credits</th>
+                    <th>Total Dr</th><th>Total Cr</th>
+                    <th>Source Doc</th><th>Status</th><th>Comment</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── RIGHT: Create form ──────────────────────────────────── -->
+    <div class="jrn-right" style="width:380px;">
+        <h2>New Journal Entry</h2>
+
+        <!-- Error box -->
+        <div id="ac-jrnErrors" style="display:none;margin-bottom:12px;padding:10px 14px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.35);border-radius:7px;">
+            <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#f87171;margin-bottom:6px;">Entry Errors</div>
+            <ul id="ac-jrnErrorList" style="margin:0;padding-left:16px;color:#fca5a5;font-size:0.82rem;line-height:1.7;"></ul>
+        </div>
+
+        <!-- Submit toast -->
+        <div id="ac-toast" style="display:none;margin-bottom:12px;padding:9px 14px;border-radius:7px;font-size:0.82rem;font-weight:500;"></div>
+
+        <form id="ac-journalForm" autocomplete="off">
+
+            <label>Date <span style="color:#f87171;">*</span></label>
+            <input type="date" id="ac-jrnDate" required>
+
+            <label>Description / Memo</label>
+            <input type="text" id="ac-jrnDesc" placeholder="Optional memo…">
+
+            <!-- Debit lines -->
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;margin-bottom:6px;">
+                <label style="margin:0;color:#60a5fa;font-size:0.72rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;">Debit Lines</label>
+                <button type="button" id="ac-addDebitBtn" data-tooltip="Add another debit line"
+                        style="background:rgba(96,165,250,0.12);border:1px solid rgba(96,165,250,0.25);color:#60a5fa;font-size:0.75rem;padding:3px 10px;border-radius:5px;margin:0;">+ Add Debit</button>
+            </div>
+            <div id="ac-debitLines"></div>
+
+            <!-- Credit lines -->
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;margin-bottom:6px;">
+                <label style="margin:0;color:#f472b6;font-size:0.72rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;">Credit Lines</label>
+                <button type="button" id="ac-addCreditBtn" data-tooltip="Add another credit line"
+                        style="background:rgba(244,114,182,0.12);border:1px solid rgba(244,114,182,0.25);color:#f472b6;font-size:0.75rem;padding:3px 10px;border-radius:5px;margin:0;">+ Add Credit</button>
+            </div>
+            <div id="ac-creditLines"></div>
+
+            <!-- Balance indicator -->
+            <div id="ac-jrnBalanceCheck" class="jrn-balance-check" style="margin-top:12px;"></div>
+
+            <!-- Totals -->
+            <div style="display:flex;gap:10px;margin-top:8px;">
+                <div style="flex:1;background:rgba(96,165,250,0.07);border:1px solid rgba(96,165,250,0.15);border-radius:6px;padding:8px 10px;text-align:center;">
+                    <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:#60a5fa;margin-bottom:3px;">Total Debit</div>
+                    <div id="ac-totalDebitDisplay"  style="font-family:'DM Mono',monospace;font-size:0.95rem;color:#e2e8f0;">$0.00</div>
+                </div>
+                <div style="flex:1;background:rgba(244,114,182,0.07);border:1px solid rgba(244,114,182,0.15);border-radius:6px;padding:8px 10px;text-align:center;">
+                    <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:#f472b6;margin-bottom:3px;">Total Credit</div>
+                    <div id="ac-totalCreditDisplay" style="font-family:'DM Mono',monospace;font-size:0.95rem;color:#e2e8f0;">$0.00</div>
+                </div>
+            </div>
+
+            <!-- Source Document -->
+            <div style="margin-top:16px;">
+                <label style="margin:0 0 5px;display:block;">
+                    Source Document
+                    <span style="color:#64748b;font-weight:400;font-size:0.7rem;text-transform:none;letter-spacing:0;">(optional)</span>
+                </label>
+                <div id="ac-dropZone"
+                     style="border:2px dashed rgba(255,255,255,0.1);border-radius:8px;padding:14px 16px;text-align:center;cursor:pointer;transition:border-color 0.15s,background 0.15s;">
+                    <div style="font-size:1.4rem;margin-bottom:4px;">📎</div>
+                    <div style="font-size:0.8rem;color:#64748b;margin-bottom:6px;">
+                        Drag &amp; drop or
+                        <span style="color:#a78bfa;text-decoration:underline;cursor:pointer;"
+                              onclick="document.getElementById('ac-sourceFile').click()">browse</span>
+                    </div>
+                    <div style="font-size:0.7rem;color:#475569;">PDF, Word, Excel, CSV, JPG, PNG</div>
+                    <input type="file" id="ac-sourceFile"
+                           accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.jpg,.jpeg,.png"
+                           style="display:none;">
+                </div>
+                <!-- File preview -->
+                <div id="ac-filePreview"
+                     style="display:none;margin-top:8px;align-items:center;gap:8px;padding:8px 12px;
+                           background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.2);border-radius:6px;">
+                    <span id="ac-fileIcon" style="font-size:1.1rem;">📄</span>
+                    <div style="flex:1;min-width:0;">
+                        <div id="ac-fileName" style="font-size:0.82rem;color:#e2e8f0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+                        <div id="ac-fileSize" style="font-size:0.7rem;color:#64748b;"></div>
+                    </div>
+                    <button type="button" id="ac-fileRemove" data-tooltip="Remove attachment"
+                            style="background:transparent;border:none;color:#64748b;font-size:0.9rem;padding:4px;margin:0;line-height:1;cursor:pointer;">✕</button>
+                </div>
+            </div>
+
+            <label style="margin-top:16px;">Created By</label>
+            <input type="text" id="ac-jrnCreatedBy" readonly>
+
+            <div style="display:flex;gap:8px;margin-top:18px;">
+                <button type="submit" id="ac-jrnSubmitBtn"
+                        data-tooltip="Validate and submit for manager approval" style="flex:1;">
+                    Submit Entry
+                </button>
+                <button type="button" id="ac-jrnResetBtn" data-tooltip="Reset form and start over"
+                        style="flex:0 0 auto;background:transparent;border:1px solid rgba(255,255,255,0.12);color:#94a3b8;padding:10px 14px;margin:0;">
+                    Reset
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<!-- PR Detail Modal -->
+<div id="ac-prModal" class="modal">
+    <div class="modal-content" style="max-width:560px;">
+        <span class="close" id="ac-prModalClose">&times;</span>
+        <h3 id="ac-prModalTitle">Journal Entry Detail</h3>
+        <div id="ac-prModalContent"></div>
+    </div>
+</div>
+
+<!-- Help -->
+<button class="help-fab" id="helpBtn" data-tooltip="Open help">?</button>
+<div id="helpModal" class="help-modal">
+    <div class="help-modal-header">
+        <h2>Help — Journal Entries</h2>
+        <button class="help-modal-close" id="helpModalClose">&#x2715;</button>
+    </div>
+    <div class="help-topics">
+        <div class="help-topic">
+            <button class="help-topic-toggle active">✏️ Creating Entries</button>
+            <div class="help-topic-body open"><ul>
+                <li><strong>Debits first</strong> — Debit lines always appear before credit lines.</li>
+                <li><strong>Multiple lines</strong> — Use "+ Add Debit / Credit" for compound entries.</li>
+                <li><strong>Must balance</strong> — Total debits must equal total credits.</li>
+                <li><strong>Source Document</strong> — Optionally attach a PDF, Word, Excel, CSV, or image file as supporting documentation.</li>
+                <li><strong>Reset</strong> — Clears the form. Cannot delete after submitting.</li>
+            </ul></div>
+        </div>
+        <div class="help-topic">
+            <button class="help-topic-toggle">📋 Viewing Entries</button>
+            <div class="help-topic-body"><ul>
+                <li><strong>Tabs</strong> — Filter by All, Pending, Approved, or Rejected.</li>
+                <li><strong>Search</strong> — Search by account name, amount, or description.</li>
+                <li><strong>PR link</strong> — Click a PR number to view full entry details.</li>
+                <li><strong>Rejected entries</strong> — Check the Comment column for the manager's reason.</li>
+            </ul></div>
+        </div>
+    </div>
+</div>
+<div id="helpOverlay" class="help-overlay"></div>
+
+<script src="script.js"></script>
+<script>
+    (function () {
+        "use strict";
+
+        document.addEventListener("DOMContentLoaded", async function () {
+
+            // ── State ─────────────────────────────────────────────────────
+            let activeAccounts = [];
+            let acctMap        = {};   // id → AccountName
+            let allJournals    = [];
+
+            // ── Helpers ──────────────────────────────────────────────────
+            function $(id) { return document.getElementById(id); }
+
+            function showErrors(errs) {
+                $("ac-jrnErrors").style.display = "block";
+                $("ac-jrnErrorList").innerHTML  = errs.map(e => `<li>${e}</li>`).join("");
+                $("ac-jrnErrors").scrollIntoView({ behavior:"smooth", block:"nearest" });
+            }
+            function hideErrors() { $("ac-jrnErrors").style.display = "none"; }
+
+            // ── Load accounts from API ────────────────────────────────────
+            async function loadAccounts() {
+                try {
+                    const data = await apiFetch("/accounts/get-all-accounts");
+                    activeAccounts = data || [];
+                    acctMap = {};
+                    activeAccounts.forEach(a => { acctMap[a.id] = a.accountName; });
+                } catch (_) { activeAccounts = []; acctMap = {}; }
+            }
+            function makeOptions() {
+                return `<option value="">— Select account —</option>` +
+                    activeAccounts.map(a =>
+                        `<option value="${a.id}">${a.accountNumber} — ${a.accountName}</option>`
+                    ).join("");
+            }
+
+            function showToast(msg, type) {
+                const t = $("ac-toast");
+                t.textContent = msg;
+                t.style.cssText = type === "success"
+                    ? "display:block;background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.3);color:#34d399;"
+                    : "display:block;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.3);color:#fbbf24;";
+                setTimeout(() => t.style.display = "none", 5000);
+            }
+
+            // ── Source document ──────────────────────────────────────────
+            const fileInput   = $("ac-sourceFile");
+            const dropZone    = $("ac-dropZone");
+            const filePreview = $("ac-filePreview");
+            let   attachedFile = null;
+
+            const EXT_ICONS = { pdf:"📕", doc:"📘", docx:"📘", xls:"📗", xlsx:"📗", csv:"📊", jpg:"🖼️", jpeg:"🖼️", png:"🖼️" };
+
+            function fmtBytes(b) {
+                if (b < 1024)    return b + " B";
+                if (b < 1048576) return (b/1024).toFixed(1) + " KB";
+                return (b/1048576).toFixed(1) + " MB";
+            }
+
+            function showFile(file) {
+                attachedFile = file;
+                const ext = file.name.split(".").pop().toLowerCase();
+                $("ac-fileIcon").textContent = EXT_ICONS[ext] || "📄";
+                $("ac-fileName").textContent = file.name;
+                $("ac-fileSize").textContent = fmtBytes(file.size);
+                filePreview.style.display    = "flex";
+                dropZone.style.borderColor   = "rgba(167,139,250,0.4)";
+                dropZone.style.background    = "rgba(167,139,250,0.05)";
+            }
+
+            function clearFile() {
+                attachedFile               = null;
+                fileInput.value            = "";
+                filePreview.style.display  = "none";
+                dropZone.style.borderColor = "rgba(255,255,255,0.1)";
+                dropZone.style.background  = "transparent";
+            }
+
+            fileInput.addEventListener("change", function () { if (this.files[0]) showFile(this.files[0]); });
+
+            dropZone.addEventListener("click", function (e) {
+                if (e.target.tagName !== "SPAN") fileInput.click();
+            });
+            dropZone.addEventListener("dragover", e => {
+                e.preventDefault();
+                dropZone.style.borderColor = "rgba(167,139,250,0.6)";
+                dropZone.style.background  = "rgba(167,139,250,0.07)";
+            });
+            dropZone.addEventListener("dragleave", () => {
+                if (!attachedFile) { dropZone.style.borderColor="rgba(255,255,255,0.1)"; dropZone.style.background="transparent"; }
+            });
+            dropZone.addEventListener("drop", e => {
+                e.preventDefault();
+                const file = e.dataTransfer.files[0];
+                if (file) { fileInput.files = e.dataTransfer.files; showFile(file); }
+            });
+            $("ac-fileRemove").addEventListener("click", clearFile);
+
+            // ── Line builder ─────────────────────────────────────────────
+            let drCount = 0, crCount = 0;
+
+            function makeLine(type) {
+                const id    = `acline_${type}_${type === "dr" ? ++drCount : ++crCount}`;
+                const color = type === "dr" ? "rgba(96,165,250,0.2)" : "rgba(244,114,182,0.2)";
+                const wrap  = document.createElement("div");
+                wrap.id = id;
+                wrap.style.cssText = "display:flex;gap:6px;align-items:center;margin-bottom:6px;";
+                wrap.innerHTML = `
+            <select style="flex:2;padding:8px 10px;background:rgba(255,255,255,0.05);border:1px solid ${color};border-radius:6px;color:#e2e8f0;font-size:0.82rem;">${makeOptions()}</select>
+            <input type="number" step="0.01" min="0.01" placeholder="0.00"
+                style="flex:1;padding:8px 10px;background:rgba(255,255,255,0.05);border:1px solid ${color};border-radius:6px;color:#e2e8f0;font-size:0.82rem;">
+            <button type="button" data-tooltip="Remove line"
+                style="background:transparent;border:none;color:#64748b;font-size:1rem;padding:6px;margin:0;line-height:1;cursor:pointer;">✕</button>`;
+                wrap.querySelector("button").addEventListener("click", function () {
+                    const parent = wrap.parentElement;
+                    if (parent && parent.querySelectorAll("div").length > 1) { wrap.remove(); updateTotals(); }
+                });
+                wrap.querySelectorAll("select,input").forEach(el => el.addEventListener("input", updateTotals));
+                return wrap;
+            }
+
+            const debitEl  = $("ac-debitLines");
+            const creditEl = $("ac-creditLines");
+
+            function initLines() {
+                debitEl.innerHTML  = "";
+                creditEl.innerHTML = "";
+                drCount = 0; crCount = 0;
+                debitEl.appendChild(makeLine("dr"));
+                creditEl.appendChild(makeLine("cr"));
+            }
+
+            $("ac-addDebitBtn").addEventListener("click",  () => debitEl.appendChild(makeLine("dr")));
+            $("ac-addCreditBtn").addEventListener("click", () => creditEl.appendChild(makeLine("cr")));
+
+            function getLines(container) {
+                return [...container.querySelectorAll("div")].map(row => ({
+                    accountId: parseInt(row.querySelector("select").value) || 0,
+                    amount:    parseFloat(row.querySelector("input").value) || 0
+                }));
+            }
+
+            function updateTotals() {
+                const dr   = getLines(debitEl).reduce((s, l) => s + l.amount, 0);
+                const cr   = getLines(creditEl).reduce((s, l) => s + l.amount, 0);
+                $("ac-totalDebitDisplay").textContent  = "$" + dr.toFixed(2);
+                $("ac-totalCreditDisplay").textContent = "$" + cr.toFixed(2);
+                const box  = $("ac-jrnBalanceCheck");
+                const diff = Math.abs(dr - cr);
+                if (dr > 0 || cr > 0) {
+                    box.textContent = diff < 0.001 ? "✓ Entry is balanced" : `✗ Unbalanced — difference: $${diff.toFixed(2)}`;
+                    box.className   = "jrn-balance-check " + (diff < 0.001 ? "balanced" : "unbalanced");
+                } else { box.textContent = ""; box.className = "jrn-balance-check"; }
+                hideErrors();
+            }
+
+            // ── Validate ─────────────────────────────────────────────────
+            function validate(drLines, crLines) {
+                const errs = [];
+                const drT  = drLines.reduce((s, l) => s + l.amount, 0);
+                const crT  = crLines.reduce((s, l) => s + l.amount, 0);
+                if (!$("ac-jrnDate").value) errs.push("Date is required.");
+                if (!drLines.length)        errs.push("At least one debit line is required.");
+                if (!crLines.length)        errs.push("At least one credit line is required.");
+                drLines.forEach((l, i) => {
+                    if (!l.accountId) errs.push(`Debit line ${i+1}: No account selected.`);
+                    if (l.amount<=0)  errs.push(`Debit line ${i+1}: Amount must be greater than zero.`);
+                });
+                crLines.forEach((l, i) => {
+                    if (!l.accountId) errs.push(`Credit line ${i+1}: No account selected.`);
+                    if (l.amount<=0)  errs.push(`Credit line ${i+1}: Amount must be greater than zero.`);
+                });
+                const allIds = [...drLines.map(l => l.accountId), ...crLines.map(l => l.accountId)].filter(Boolean);
+                const dupes  = allIds.filter((id, i) => allIds.indexOf(id) !== i);
+                if (dupes.length) {
+                    const names = [...new Set(dupes)].map(id => acctMap[id] || id).join(", ");
+                    errs.push(`Duplicate account: "${names}" cannot appear in both debit and credit.`);
+                }
+                if (drT > 0 && crT > 0 && Math.abs(drT - crT) >= 0.01)
+                    errs.push(`Entry not balanced — Debits $${drT.toFixed(2)} ≠ Credits $${crT.toFixed(2)}.`);
+                return errs;
+            }
+
+            // ── Reset ────────────────────────────────────────────────────
+            function resetForm() {
+                $("ac-journalForm").reset();
+                initLines();
+                updateTotals();
+                hideErrors();
+                clearFile();
+            }
+
+            // ── Submit ───────────────────────────────────────────────────
+            $("ac-journalForm").addEventListener("submit", async function (e) {
+                e.preventDefault();
+                const drLines = getLines(debitEl);
+                const crLines = getLines(creditEl);
+                const errs    = validate(drLines, crLines);
+                if (errs.length) { showErrors(errs); return; }
+                hideErrors();
+
+                const userId   = parseInt(localStorage.getItem("userId")) || 0;
+                const userName = localStorage.getItem("currentUsername") || "Accountant";
+
+                const payload = {
+                    journalName:   $("ac-jrnDesc").value.trim() || "Journal Entry",
+                    entryDate:     $("ac-jrnDate").value + "T00:00:00",
+                    journalStatus: "Pending",
+                    creatorId:     userId,
+                    creatorName:   userName,
+                    approverId:    0,
+                    approverName:  "",
+                    journalLines: [
+                        ...drLines.map(l => ({ accountId: l.accountId, entryType: "Debit",  amount: l.amount })),
+                        ...crLines.map(l => ({ accountId: l.accountId, entryType: "Credit", amount: l.amount }))
+                    ]
+                };
+
+                const btn = $("ac-jrnSubmitBtn");
+                btn.textContent = "Submitting…"; btn.disabled = true;
+                try {
+                    const result = await apiFetch("/journal/journal-entries", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+                    const pr = `JE${String(result.journalId).padStart(4, "0")}`;
+                    showToast(`✓ Entry ${pr} submitted for manager approval.`, "success");
+                    resetForm();
+                    await reloadJournals();
+                } catch (err) {
+                    showErrors([err.message || "Failed to submit journal entry."]);
+                } finally {
+                    btn.textContent = "Submit Entry"; btn.disabled = false;
+                }
+            });
+
+            $("ac-jrnResetBtn").addEventListener("click", resetForm);
+
+            // ── Tabs & filters ───────────────────────────────────────────
+            let activeTab = "all", searchTerm = "", dateFrom = "", dateTo = "";
+
+            document.querySelectorAll(".jrn-tab").forEach(btn => {
+                btn.addEventListener("click", function () {
+                    document.querySelectorAll(".jrn-tab").forEach(b => b.classList.remove("active"));
+                    this.classList.add("active");
+                    activeTab = this.dataset.tab;
+                    renderTable();
+                });
+            });
+            $("ac-jrnSearch").addEventListener("input",    function () { searchTerm = this.value.toLowerCase(); renderTable(); });
+            $("ac-jrnDateFrom").addEventListener("change", function () { dateFrom   = this.value;               renderTable(); });
+            $("ac-jrnDateTo").addEventListener("change",   function () { dateTo     = this.value;               renderTable(); });
+            $("ac-jrnClearFilter").addEventListener("click", function () {
+                searchTerm = ""; dateFrom = ""; dateTo = ""; activeTab = "all";
+                ["ac-jrnSearch","ac-jrnDateFrom","ac-jrnDateTo"].forEach(id => $(id).value = "");
+                document.querySelectorAll(".jrn-tab").forEach(b => b.classList.remove("active"));
+                document.querySelector('.jrn-tab[data-tab="all"]').classList.add("active");
+                renderTable();
+            });
+
+            // ── Render ───────────────────────────────────────────────────
+            async function reloadJournals() {
+                try { allJournals = await apiFetch("/journal/journal-entries") || []; }
+                catch (_) { allJournals = []; }
+                renderTable();
+            }
+
+            function renderTable() {
+                const tbody = document.querySelector("#ac-journalTable tbody");
+                if (!tbody) return;
+
+                let rows = [...allJournals];
+                if (activeTab !== "all") rows = rows.filter(j => j.journalStatus === activeTab);
+                if (dateFrom) rows = rows.filter(j => j.entryDate && j.entryDate.slice(0,10) >= dateFrom);
+                if (dateTo)   rows = rows.filter(j => j.entryDate && j.entryDate.slice(0,10) <= dateTo);
+                if (searchTerm) rows = rows.filter(j => {
+                    const accts = (j.journalLines || []).map(l => acctMap[l.accountId] || "").join(" ");
+                    return (accts + " " + (j.journalName||"") + " " + (j.entryDate||"")).toLowerCase().includes(searchTerm);
+                });
+
+                tbody.innerHTML = "";
+                if (!rows.length) {
+                    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:#475569;padding:2rem;">No entries found.</td></tr>`;
+                    return;
+                }
+
+                rows.forEach(j => {
+                    const pr      = `JE${String(j.journalId).padStart(4, "0")}`;
+                    const date    = j.entryDate ? j.entryDate.slice(0, 10) : "—";
+                    const sCls    = { Pending:"jrn-status-pending", Approved:"jrn-status-approved", Rejected:"jrn-status-rejected" }[j.journalStatus] || "";
+                    const drLines = (j.journalLines || []).filter(l => l.entryType === "Debit");
+                    const crLines = (j.journalLines || []).filter(l => l.entryType === "Credit");
+                    const drHtml  = drLines.map(l => `<div style="color:#60a5fa;font-size:0.78rem;">Dr: ${acctMap[l.accountId] || "Acct #"+l.accountId} <span style="font-family:'DM Mono',monospace;">$${parseFloat(l.amount).toFixed(2)}</span></div>`).join("");
+                    const crHtml  = crLines.map(l => `<div style="color:#f472b6;font-size:0.78rem;">Cr: ${acctMap[l.accountId] || "Acct #"+l.accountId} <span style="font-family:'DM Mono',monospace;">$${parseFloat(l.amount).toFixed(2)}</span></div>`).join("");
+
+                    tbody.innerHTML += `
+            <tr>
+                <td><a href="#" class="jrn-pr-link" onclick="acViewPR(${j.journalId});return false;">${pr}</a></td>
+                <td>${date}</td>
+                <td>${j.journalName || "—"}</td>
+                <td>${drHtml}</td>
+                <td>${crHtml}</td>
+                <td style="font-family:'DM Mono',monospace;color:#60a5fa;">$${drLines.reduce((s,l)=>s+parseFloat(l.amount),0).toFixed(2)}</td>
+                <td style="font-family:'DM Mono',monospace;color:#f472b6;">$${crLines.reduce((s,l)=>s+parseFloat(l.amount),0).toFixed(2)}</td>
+                <td><span style="color:#334155;font-size:0.78rem;">—</span></td>
+                <td><span class="jrn-status-badge ${sCls}">${j.journalStatus}</span></td>
+                <td style="font-size:0.78rem;color:#64748b;max-width:140px;">${j.comment || "—"}</td>
+            </tr>`;
+                });
+            }
+
+            // ── PR detail modal ──────────────────────────────────────────
+            window.acViewPR = function (id) {
+                const j = allJournals.find(x => x.journalId === id);
+                if (!j) return;
+                const pr      = `JE${String(j.journalId).padStart(4, "0")}`;
+                const date    = j.entryDate ? j.entryDate.slice(0, 10) : "—";
+                const drLines = (j.journalLines || []).filter(l => l.entryType === "Debit");
+                const crLines = (j.journalLines || []).filter(l => l.entryType === "Credit");
+                const sCls    = { Pending:"jrn-status-pending", Approved:"jrn-status-approved", Rejected:"jrn-status-rejected" }[j.journalStatus] || "";
+                $("ac-prModalTitle").textContent = `Journal Entry — ${pr}`;
+                $("ac-prModalContent").innerHTML = `
+            <table style="width:100%;border-collapse:collapse;margin-bottom:14px;">
+                <tr><td style="padding:6px 10px;color:#64748b;font-size:0.8rem;font-weight:600;width:36%;">PR</td>
+                    <td style="padding:6px 10px;color:#e2e8f0;font-family:'DM Mono',monospace;">${pr}</td></tr>
+                <tr><td style="padding:6px 10px;color:#64748b;font-size:0.8rem;font-weight:600;">Date</td>
+                    <td style="padding:6px 10px;color:#e2e8f0;">${date}</td></tr>
+                <tr><td style="padding:6px 10px;color:#64748b;font-size:0.8rem;font-weight:600;">Description</td>
+                    <td style="padding:6px 10px;color:#e2e8f0;">${j.journalName || "—"}</td></tr>
+                <tr><td style="padding:6px 10px;color:#64748b;font-size:0.8rem;font-weight:600;">Created By</td>
+                    <td style="padding:6px 10px;color:#e2e8f0;">${j.creatorName || "—"}</td></tr>
+                <tr><td style="padding:6px 10px;color:#64748b;font-size:0.8rem;font-weight:600;">Status</td>
+                    <td style="padding:6px 10px;"><span class="jrn-status-badge ${sCls}">${j.journalStatus}</span></td></tr>
+                ${j.approverName ? `<tr><td style="padding:6px 10px;color:#64748b;font-size:0.8rem;font-weight:600;">Approved By</td>
+                    <td style="padding:6px 10px;color:#34d399;">${j.approverName}</td></tr>` : ""}
+                ${j.comment ? `<tr><td style="padding:6px 10px;color:#64748b;font-size:0.8rem;font-weight:600;">Comment</td>
+                    <td style="padding:6px 10px;color:#fca5a5;">${j.comment}</td></tr>` : ""}
+            </table>
+            <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#475569;margin-bottom:8px;">Entry Lines</div>
+            <table style="width:100%;border-collapse:collapse;border:1px solid rgba(255,255,255,0.07);border-radius:8px;overflow:hidden;">
+                <thead><tr style="background:rgba(255,255,255,0.04);">
+                    <th style="padding:8px 12px;text-align:left;font-size:0.7rem;color:#475569;text-transform:uppercase;">Type</th>
+                    <th style="padding:8px 12px;text-align:left;font-size:0.7rem;color:#475569;text-transform:uppercase;">Account</th>
+                    <th style="padding:8px 12px;text-align:right;font-size:0.7rem;color:#475569;text-transform:uppercase;">Amount</th>
+                </tr></thead>
+                <tbody>
+                    ${drLines.map(l => `<tr>
+                        <td style="padding:8px 12px;color:#60a5fa;font-weight:600;font-size:0.82rem;">DEBIT</td>
+                        <td style="padding:8px 12px;color:#cbd5e1;font-size:0.82rem;">${acctMap[l.accountId] || "Acct #"+l.accountId}</td>
+                        <td style="padding:8px 12px;text-align:right;font-family:'DM Mono',monospace;color:#60a5fa;">$${parseFloat(l.amount).toFixed(2)}</td>
+                    </tr>`).join("")}
+                    ${crLines.map(l => `<tr>
+                        <td style="padding:8px 12px;color:#f472b6;font-weight:600;font-size:0.82rem;">CREDIT</td>
+                        <td style="padding:8px 12px;color:#cbd5e1;font-size:0.82rem;padding-left:28px;">${acctMap[l.accountId] || "Acct #"+l.accountId}</td>
+                        <td style="padding:8px 12px;text-align:right;font-family:'DM Mono',monospace;color:#f472b6;">$${parseFloat(l.amount).toFixed(2)}</td>
+                    </tr>`).join("")}
+                    <tr style="background:rgba(255,255,255,0.03);border-top:1px solid rgba(255,255,255,0.08);">
+                        <td colspan="2" style="padding:8px 12px;font-weight:700;color:#94a3b8;font-size:0.78rem;">TOTALS</td>
+                        <td style="padding:8px 12px;text-align:right;font-family:'DM Mono',monospace;font-size:0.82rem;">
+                            <span style="color:#60a5fa;">Dr $${drLines.reduce((s,l)=>s+parseFloat(l.amount),0).toFixed(2)}</span> /
+                            <span style="color:#f472b6;">Cr $${crLines.reduce((s,l)=>s+parseFloat(l.amount),0).toFixed(2)}</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>`;
+                $("ac-prModal").style.display = "block";
+            };
+
+            $("ac-prModalClose").addEventListener("click", () => $("ac-prModal").style.display = "none");
+            window.addEventListener("click", e => {
+                const m = $("ac-prModal");
+                if (m && e.target === m) m.style.display = "none";
+            });
+
+            // ── Init ─────────────────────────────────────────────────────
+            $("ac-jrnCreatedBy").value = localStorage.getItem("currentUsername") || "Accountant";
+            await loadAccounts();
+            initLines();
+            await reloadJournals();
+        });
+
+    }()); // end IIFE
+</script>
+</body>
+</html>

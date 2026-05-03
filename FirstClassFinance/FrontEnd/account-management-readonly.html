@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chart of Accounts</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body data-readonly="true">
+
+<!-- Waffle Sidebar — filled dynamically by role via script.js -->
+<div id="waffleSidebar" class="waffle-sidebar">
+    <div class="waffle-sidebar-header">
+        <span class="waffle-sidebar-title">Navigation</span>
+        <button class="waffle-sidebar-close" id="waffleSidebarClose" data-tooltip="Close navigation menu">&#x2715;</button>
+    </div>
+    <nav class="waffle-nav" id="roledNav"></nav>
+    <div class="waffle-sidebar-footer">
+        <span class="waffle-role-badge" id="roleBadge">—</span>
+    </div>
+</div>
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+<!-- Profile Dropdown -->
+<div id="profileDropdown" class="profile-dropdown">
+    <div class="profile-dropdown-header">
+        <div class="profile-dropdown-avatar" id="profileAvatar">?</div>
+        <div>
+            <div class="profile-dropdown-name" id="profileName">—</div>
+            <div class="profile-dropdown-role" id="profileRoleLabel">—</div>
+        </div>
+    </div>
+    <div class="profile-dropdown-divider"></div>
+    <a href="index.html" class="profile-dropdown-item" data-tooltip="Sign out"><span>⎋</span> Logout</a>
+</div>
+
+<!-- Help Modal -->
+<div id="helpModal" class="help-modal">
+    <div class="help-modal-header">
+        <h2>Help &amp; Documentation</h2>
+        <button class="help-modal-close" id="helpModalClose" data-tooltip="Close help">&#x2715;</button>
+    </div>
+    <div class="help-topics">
+        <div class="help-topic">
+            <button class="help-topic-toggle active">📒 Chart of Accounts</button>
+            <div class="help-topic-body open">
+                <p>View the full chart of financial accounts in <strong>read-only mode</strong>.</p>
+                <ul>
+                    <li><strong>Click an account name</strong> — Opens the full ledger page for that account.</li>
+                    <li><strong>📋 Log link</strong> — Opens the event log showing all before/after changes to the account.</li>
+                    <li><strong>Search &amp; filters</strong> — Narrow by name, category, normal side, or status. Filters stack.</li>
+                    <li><strong>Read-only</strong> — Adding, editing, and deactivating is restricted to Administrators.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="help-topic">
+            <button class="help-topic-toggle">🧭 Navigation</button>
+            <div class="help-topic-body">
+                <ul>
+                    <li><strong>Waffle menu (⠿)</strong> — Opens the navigation sidebar.</li>
+                    <li><strong>Profile menu</strong> — Click your name or avatar for Logout.</li>
+                    <li><strong>Help button (?)</strong> — Opens this panel.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="helpOverlay" class="help-overlay"></div>
+
+<!-- Navbar -->
+<header class="navbar">
+    <div class="nav-left">
+        <button class="waffle-btn" id="waffleBtn" data-tooltip="Open navigation menu">
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+        </button>
+        <div class="nav-divider"></div>
+        <div class="nav-brand">
+            <img src="Assets/LogoFirstClass.png" alt="Logo" class="nav-logo">
+            <span class="site-name">First Class <span>Finance</span></span>
+        </div>
+    </div>
+    <div class="nav-right">
+        <div class="profile-trigger" id="profileTrigger" data-tooltip="Account options">
+            <img src="" alt="Profile" class="profile-icon" id="profileImg">
+            <span class="profile-trigger-name" id="profileTriggerName">—</span>
+            <span class="profile-trigger-caret">▾</span>
+        </div>
+    </div>
+</header>
+
+<div class="page-container">
+    <div class="left-panel" style="flex:1;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+            <h2 style="margin-bottom:0;">Chart of Accounts</h2>
+            <span class="readonly-badge" data-tooltip="You have view-only access to this page">🔒 View Only</span>
+        </div>
+
+        <div class="filter-bar">
+            <div class="filter-search-wrap">
+                <span class="filter-search-icon">⌕</span>
+                <input type="text" id="filterSearch" placeholder="Search by name, number, description…">
+            </div>
+            <select id="filterCategory">
+                <option value="">All Categories</option>
+                <option value="Asset">Asset</option>
+                <option value="Liability">Liability</option>
+                <option value="Equity">Equity</option>
+                <option value="Revenue">Revenue</option>
+                <option value="Expense">Expense</option>
+            </select>
+            <select id="filterNormalSide">
+                <option value="">All Sides</option>
+                <option value="Debit">Debit</option>
+                <option value="Credit">Credit</option>
+            </select>
+            <select id="filterStatus">
+                <option value="">All Statuses</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+            </select>
+            <button type="button" id="filterClearBtn" data-tooltip="Clear all filters">Clear</button>
+        </div>
+
+        <table id="accountsTable">
+            <thead>
+            <tr>
+                <th>Account Name</th>
+                <th>Account #</th>
+                <th>Description</th>
+                <th>Normal Side</th>
+                <th>Category</th>
+                <th>Subcategory</th>
+                <th>Debit</th>
+                <th>Credit</th>
+                <th>Balance</th>
+                <th>Date Added</th>
+                <th>User ID</th>
+                <th>Order</th>
+                <th>Statement</th>
+                <th>Comment</th>
+                <th>Status</th>
+                <th>Event Log</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Ledger Modal (kept for admin popup fallback — not used on readonly) -->
+<div id="ledgerModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Ledger</h3>
+        <div id="ledgerContent"></div>
+    </div>
+</div>
+
+<button class="help-fab" id="helpBtn" data-tooltip="Open help documentation">?</button>
+
+<script src="script.js"></script>
+</body>
+</html>

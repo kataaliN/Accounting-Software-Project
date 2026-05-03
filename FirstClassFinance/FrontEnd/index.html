@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>First Class Finance | Sign In</title>
+    <link rel="stylesheet" href="style.css"/>
+</head>
+<body class="login-page">
+
+<!-- Navbar -->
+<header class="navbar">
+    <div class="nav-left">
+        <div class="nav-brand">
+            <img src="Assets/LogoFirstClass.png" class="nav-logo">
+            <span class="site-name">First Class <span>Finance</span></span>
+        </div>
+    </div>
+    <div class="nav-right">
+        <span class="login-nav-label">Secure Portal</span>
+        <img src="Assets/SignInProfile.avif" alt="Sign-In" class="profile-icon">
+    </div>
+</header>
+
+<!-- Main Layout -->
+<main class="container">
+
+    <!-- Left: Cover -->
+    <section class="cover">
+
+        <div class="cover-hero">
+            <div class="cover-eyebrow">Financial Management Platform</div>
+            <h1>Welcome to<br><span class="cover-brand">First Class Finance</span></h1>
+            <p class="cover-lead">
+                Secure, role-based access for administrators, managers, and accountants.
+                Manage users, accounts, and records with confidence.
+            </p>
+        </div>
+
+        <div class="cover-divider"></div>
+
+        <!-- Feature Highlights -->
+        <div class="features">
+            <h3>What you can do</h3>
+            <ul>
+                <li>Securely access the system from any device or browser</li>
+                <li>Manage accounting data through structured, role-based dashboards</li>
+                <li>Create and maintain a chart of accounts with built-in safeguards</li>
+                <li>Record, review, and post balanced journal transactions</li>
+                <li>Generate essential financial reports for informed decision-making</li>
+                <li>Rely on strong security measures to protect sensitive financial data</li>
+            </ul>
+        </div>
+
+        <!-- Security -->
+        <div class="security">
+            <h3>🔒 Security &amp; Reliability</h3>
+            <p>
+                First Class Finance enforces strong password standards, controlled
+                user access, and approval-based workflows to ensure financial data
+                remains accurate, protected, and auditable at every level.
+            </p>
+        </div>
+
+        <p class="cta-text">
+            Log in to access your dashboard and begin managing financial records
+            with clarity and control.
+        </p>
+
+    </section>
+
+    <!-- Right: Login Card -->
+    <section class="login-card">
+
+        <div class="login-card-top">
+            <div class="login-card-logo">
+                <img src="Assets/LogoFirstClass.png" class="nav-logo">
+            </div>
+            <h2>Sign In</h2>
+            <p class="login-card-sub">Enter your credentials to continue</p>
+        </div>
+
+        <form id="loginForm">
+            <div class="login-field">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter username" required />
+            </div>
+
+            <div class="login-field">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="••••••••" required />
+            </div>
+
+            <div class="login-field">
+                <label for="role">Role</label>
+                <select id="role">
+                    <option value="Administrator">Administrator</option>
+                    <option value="Manager">Manager</option>
+                    <option value="Accountant">Accountant</option>
+                </select>
+            </div>
+
+            <button type="submit" class="login-btn">Sign In →</button>
+        </form>
+
+        <div class="login-links">
+            <a href="#" id="forgotPasswordLink">Forgot Password?</a>
+            <a href="#" id="requestAccessLink">Request Access</a>
+        </div>
+
+        <!-- Forgot Password Modal -->
+        <div id="forgotPasswordModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="closeForgotPassword">&times;</span>
+                <h3>Forgot Password</h3>
+                <form id="forgotPasswordForm">
+                    <div class="login-field">
+                        <label for="forgotUsername">Username</label>
+                        <input type="text" id="forgotUsername" required>
+                    </div>
+                    <div class="login-field">
+                        <label for="forgotEmail">Email Address</label>
+                        <input type="email" id="forgotEmail" required>
+                    </div>
+                    <button type="submit" class="login-btn">Next</button>
+                </form>
+
+                <form id="resetPasswordForm" style="display:none;">
+                    <p id="securityQuestionDisplay" style="margin-bottom:15px; color:#94a3b8;"></p>
+                    <div class="login-field">
+                        <label for="securityAnswer">Security Answer</label>
+                        <input type="text" id="securityAnswer" required>
+                    </div>
+                    <div class="login-field">
+                        <label for="newPassword">New Password</label>
+                        <input type="password" id="newPassword" required>
+                    </div>
+                    <button type="submit" class="login-btn">Reset Password</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Request Access Modal -->
+        <div id="requestAccessModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="closeRequestAccess">&times;</span>
+                <h3>Request Access</h3>
+                <form id="publicSignupForm">
+                    <div class="login-field">
+                        <label>First Name</label>
+                        <input type="text" id="signupFirstName" required>
+                    </div>
+                    <div class="login-field">
+                        <label>Last Name</label>
+                        <input type="text" id="signupLastName" required>
+                    </div>
+                    <div class="login-field">
+                        <label>Email Address</label>
+                        <input type="email" id="signupEmail" required>
+                    </div>
+                    <div class="login-field">
+                        <label>Date of Birth</label>
+                        <input type="date" id="signupDOB" required>
+                    </div>
+                    <button type="submit" class="login-btn">Submit Request</button>
+                </form>
+            </div>
+        </div>
+
+        <style>
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.6);
+                backdrop-filter: blur(4px);
+            }
+            .modal-content {
+                background-color: #1e293b;
+                margin: 10% auto;
+                padding: 30px;
+                border: 1px solid #334155;
+                width: 400px;
+                border-radius: 12px;
+                position: relative;
+                color: #f8fafc;
+            }
+            .close {
+                color: #94a3b8;
+                position: absolute;
+                top: 15px;
+                right: 20px;
+                font-size: 28px;
+                font-weight: bold;
+                cursor: pointer;
+            }
+            .close:hover { color: #f8fafc; }
+            .modal h3 { margin-top: 0; margin-bottom: 20px; font-size: 1.5rem; }
+        </style>
+
+        <div class="login-card-footer">
+            <span>🔒 Secured &amp; Encrypted</span>
+        </div>
+
+    </section>
+
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

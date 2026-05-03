@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee Management</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Waffle Sidebar -->
+<div id="waffleSidebar" class="waffle-sidebar">
+    <div class="waffle-sidebar-header">
+        <span class="waffle-sidebar-title">Navigation</span>
+        <button class="waffle-sidebar-close" id="waffleSidebarClose" data-tooltip="Close navigation menu">&#x2715;</button>
+    </div>
+    <nav class="waffle-nav">
+        <a href="admin.html" class="waffle-nav-item" data-page="admin">
+            <span class="waffle-nav-icon">⊞</span><span>Dashboard</span>
+        </a>
+        <a href="employee-management.html" class="waffle-nav-item active" data-page="employee-management">
+            <span class="waffle-nav-icon">👥</span><span>Employee Management</span>
+        </a>
+        <a href="account-management.html" class="waffle-nav-item" data-page="account-management">
+            <span class="waffle-nav-icon">📒</span><span>Account Management</span>
+        </a>
+        <a href="access-requests.html" class="waffle-nav-item" data-page="access-requests">
+            <span class="waffle-nav-icon">🔔</span><span>Access Requests</span>
+        </a>
+        <a href="reports.html" class="waffle-nav-item" data-page="reports">
+            <span class="waffle-nav-icon">📊</span><span>Financial Reports</span>
+        </a>
+        <a href="inbox.html" class="waffle-nav-item" data-page="inbox">
+            <span class="waffle-nav-icon">📬</span><span>Inbox</span>
+        </a>
+    </nav>
+    <div class="waffle-sidebar-footer">
+        <span class="waffle-role-badge">Administrator</span>
+    </div>
+</div>
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+<!-- Profile Dropdown -->
+<div id="profileDropdown" class="profile-dropdown">
+    <div class="profile-dropdown-header">
+        <div class="profile-dropdown-avatar">A</div>
+        <div>
+            <div class="profile-dropdown-name">Admin</div>
+            <div class="profile-dropdown-role">Administrator</div>
+        </div>
+    </div>
+    <div class="profile-dropdown-divider"></div>
+    <a href="index.html" class="profile-dropdown-item"><span>⎋</span> Logout</a>
+</div>
+
+<!-- Help Modal -->
+<div id="helpModal" class="help-modal">
+    <div class="help-modal-content">
+        <div class="help-modal-header">
+            <h2>Help &amp; Documentation</h2>
+            <button class="help-modal-close" id="helpModalClose" data-tooltip="Close help">&#x2715;</button>
+        </div>
+        <div class="help-topics">
+            <div class="help-topic">
+                <button class="help-topic-toggle active">👥 Employee Management</button>
+                <div class="help-topic-body open">
+                    <p>Manage all system users from this page.</p>
+                    <ul>
+                        <li><strong>Current Employees table</strong> — Lists all employees with their name, email, date of birth, and current status.</li>
+                        <li><strong>Activate / Deactivate</strong> — Toggle an employee's access on or off without deleting their record.</li>
+                        <li><strong>Manually Invite Employee</strong> — Submit a new employee's details. Their request will appear on the Access Requests page for admin approval before becoming active.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="help-topic">
+                <button class="help-topic-toggle">⊞ Dashboard</button>
+                <div class="help-topic-body">
+                    <p>The Administrator Dashboard is your central hub for navigating all management areas of the system.</p>
+                </div>
+            </div>
+            <div class="help-topic">
+                <button class="help-topic-toggle">📒 Account Management</button>
+                <div class="help-topic-body">
+                    <p>Create and manage the chart of financial accounts.</p>
+                    <ul>
+                        <li><strong>Filter bar</strong> — Search and filter accounts by category, normal side, or status.</li>
+                        <li><strong>Click a row</strong> — Opens the account ledger popup.</li>
+                        <li><strong>Edit Account</strong> — Load an account into the form for editing.</li>
+                        <li><strong>Create Account</strong> — Fill in the form and submit to add a new account.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="help-topic">
+                <button class="help-topic-toggle">🔔 Access Requests</button>
+                <div class="help-topic-body">
+                    <ul>
+                        <li><strong>Approve</strong> — Grants Active status and moves the employee to Employee Management.</li>
+                        <li><strong>Reject</strong> — Permanently removes the request.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="help-topic">
+                <button class="help-topic-toggle">🧭 Navigation</button>
+                <div class="help-topic-body">
+                    <ul>
+                        <li><strong>Waffle menu (⠿)</strong> — Opens the navigation sidebar. Current page is highlighted in green.</li>
+                        <li><strong>Profile menu</strong> — Click your name or avatar for account options including Logout.</li>
+                        <li><strong>Help button (?)</strong> — Opens this help panel on any page.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="helpOverlay" class="help-overlay"></div>
+
+<!-- Navbar -->
+<header class="navbar">
+    <div class="nav-left">
+        <button class="waffle-btn" id="waffleBtn" data-tooltip="Open navigation menu">
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+        </button>
+        <div class="nav-divider"></div>
+        <div class="nav-brand">
+            <img src="Assets/LogoFirstClass.png" class="nav-logo">
+            <span class="site-name">First Class <span>Finance</span></span>
+        </div>
+    </div>
+    <div class="nav-right">
+        <div class="profile-trigger" id="profileTrigger" data-tooltip="Account options">
+            <img src="Assets/ProfileAdminImage.png" alt="Admin Profile" class="profile-icon">
+            <span class="profile-trigger-name">Admin</span>
+            <span class="profile-trigger-caret">▾</span>
+        </div>
+    </div>
+</header>
+
+<div class="page-container">
+    <div class="left-panel">
+        <h2>Current Employees</h2>
+        <table id="employeesTable">
+            <thead>
+            <tr>
+                <th>Username</th><th>Role</th><th>Email</th>
+                <th>Created At</th><th>Status</th><th>Toggle</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="right-panel">
+        <h2>Manually Invite Employee</h2>
+        <form id="employeeSignupForm">
+            <label>First Name</label>
+            <input type="text" id="empFirstName" required>
+            <label>Last Name</label>
+            <input type="text" id="empLastName" required>
+            <label>Email</label>
+            <input type="email" id="empEmail" required>
+            <label>Date of Birth</label>
+            <input type="date" id="empDOB" required>
+            <button type="submit"
+                    data-tooltip="Submit this employee's details — they will appear on Access Requests pending admin approval">
+                Send Invite
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Help Button -->
+<button class="help-fab" id="helpBtn" data-tooltip="Open help documentation">?</button>
+
+<script src="script.js"></script>
+</body>
+</html>

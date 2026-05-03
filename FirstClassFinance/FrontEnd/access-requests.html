@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Access Requests</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Waffle Sidebar -->
+<div id="waffleSidebar" class="waffle-sidebar">
+    <div class="waffle-sidebar-header">
+        <span class="waffle-sidebar-title">Navigation</span>
+        <button class="waffle-sidebar-close" id="waffleSidebarClose" data-tooltip="Close navigation menu">&#x2715;</button>
+    </div>
+    <nav class="waffle-nav">
+        <a href="admin.html"               class="waffle-nav-item"><span class="waffle-nav-icon">⊞</span><span>Dashboard</span></a>
+        <a href="employee-management.html" class="waffle-nav-item"><span class="waffle-nav-icon">👥</span><span>Employee Management</span></a>
+        <a href="account-management.html"  class="waffle-nav-item"><span class="waffle-nav-icon">📒</span><span>Account Management</span></a>
+        <a href="access-requests.html"     class="waffle-nav-item active"><span class="waffle-nav-icon">🔔</span><span>Access Requests</span></a>
+        <a href="reports.html"             class="waffle-nav-item"><span class="waffle-nav-icon">📊</span><span>Financial Reports</span></a>
+        <a href="inbox.html"               class="waffle-nav-item"><span class="waffle-nav-icon">📬</span><span>Inbox</span></a>
+    </nav>
+    <div class="waffle-sidebar-footer">
+        <span class="waffle-role-badge">Administrator</span>
+    </div>
+</div>
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+<!-- Profile Dropdown -->
+<div id="profileDropdown" class="profile-dropdown">
+    <div class="profile-dropdown-header">
+        <div class="profile-dropdown-avatar">A</div>
+        <div><div class="profile-dropdown-name">Admin</div><div class="profile-dropdown-role">Administrator</div></div>
+    </div>
+    <div class="profile-dropdown-divider"></div>
+    <a href="index.html" class="profile-dropdown-item"><span>⎋</span> Logout</a>
+</div>
+
+<!-- Help Modal -->
+<div id="helpModal" class="help-modal">
+    <div class="help-modal-header">
+        <h2>Help &amp; Documentation</h2>
+        <button class="help-modal-close" id="helpModalClose" data-tooltip="Close help">&#x2715;</button>
+    </div>
+    <div class="help-topics">
+        <div class="help-topic">
+            <button class="help-topic-toggle active">🔔 Access Requests</button>
+            <div class="help-topic-body open">
+                <p>Review incoming employee access requests before granting system access.</p>
+                <ul>
+                    <li><strong>Public Request badge</strong> — Orange badge means the request came from the public Request Access form on the login page.</li>
+                    <li><strong>Invited badge</strong> — Grey badge means the request was created by an admin via Employee Management.</li>
+                    <li><strong>Requested Role</strong> — The role the person is asking to be granted.</li>
+                    <li><strong>Approve</strong> — Grants Active status and moves them to Employee Management.</li>
+                    <li><strong>Reject</strong> — Permanently removes the request.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="help-topic">
+            <button class="help-topic-toggle">🧭 Navigation</button>
+            <div class="help-topic-body"><ul>
+                <li><strong>Waffle menu (⠿)</strong> — Opens the navigation sidebar.</li>
+                <li><strong>Profile menu</strong> — Click your name for Logout.</li>
+                <li><strong>Help button (?)</strong> — Opens this panel.</li>
+            </ul></div>
+        </div>
+    </div>
+</div>
+<div id="helpOverlay" class="help-overlay"></div>
+
+<!-- Navbar -->
+<header class="navbar">
+    <div class="nav-left">
+        <button class="waffle-btn" id="waffleBtn" data-tooltip="Open navigation menu">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </button>
+        <div class="nav-divider"></div>
+        <div class="nav-brand">
+            <img src="Assets/LogoFirstClass.png" class="nav-logo">
+            <span class="site-name">First Class <span>Finance</span></span>
+        </div>
+    </div>
+    <div class="nav-right">
+        <div class="profile-trigger" id="profileTrigger" data-tooltip="Account options">
+            <img src="Assets/ProfileAdminImage.png" alt="Admin Profile" class="profile-icon">
+            <span class="profile-trigger-name">Admin</span>
+            <span class="profile-trigger-caret">▾</span>
+        </div>
+    </div>
+</header>
+
+<div class="page-container">
+    <div class="left-panel" style="flex:1;">
+
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+            <h2 style="margin-bottom:0;">Pending Access Requests</h2>
+            <span id="requestCountBadge" style="display:none;font-size:0.72rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:#fbbf24;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);padding:4px 12px;border-radius:20px;"></span>
+        </div>
+
+        <table id="requestsTable">
+            <thead>
+            <tr>
+                <th>Source</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>DOB</th>
+                <th>Requested Role</th>
+                <th>Reason</th>
+                <th>Submitted</th>
+                <th>Status</th>
+                <th>Approve</th>
+                <th>Reject</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Approval Modal -->
+<div id="approveModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(3px);z-index:1800;align-items:center;justify-content:center;">
+    <div style="background:linear-gradient(160deg,#1a2740,#111e30);border:1px solid rgba(255,255,255,0.09);border-radius:12px;padding:28px 32px;width:420px;max-width:95vw;box-shadow:0 24px 60px rgba(0,0,0,0.5);">
+        <h3 style="font-size:0.95rem;font-weight:700;color:#94a3b8;letter-spacing:0.05em;text-transform:uppercase;margin:0 0 6px;">Approve Request</h3>
+        <p id="approveModalName" style="font-size:0.85rem;color:#60a5fa;margin:0 0 20px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.07);"></p>
+
+        <label style="display:block;font-size:0.72rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#64748b;margin-bottom:5px;">Assign Role <span style="color:#f87171;">*</span></label>
+        <select id="approveRole" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#e2e8f0;font-size:0.875rem;margin-bottom:14px;">
+            <option value="">— Select role —</option>
+            <option value="Accountant">Accountant</option>
+            <option value="Manager">Manager</option>
+            <option value="Administrator">Administrator</option>
+        </select>
+
+        <label style="display:block;font-size:0.72rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#64748b;margin-bottom:5px;">Set Password <span style="color:#f87171;">*</span></label>
+        <input type="password" id="approvePassword" placeholder="Min 8 chars, upper, lower, number, symbol"
+               style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#e2e8f0;font-size:0.875rem;box-sizing:border-box;margin-bottom:6px;">
+        <div id="approveError" style="display:none;color:#f87171;font-size:0.78rem;margin-bottom:10px;"></div>
+
+        <div style="display:flex;gap:10px;margin-top:18px;">
+            <button id="approveConfirmBtn" style="flex:1;background:#047857;margin:0;">✓ Approve</button>
+            <button id="approveCancelBtn" style="flex:0 0 auto;background:transparent;border:1px solid rgba(255,255,255,0.12);color:#94a3b8;padding:10px 16px;margin:0;">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Help Button -->
+<button class="help-fab" id="helpBtn" data-tooltip="Open help documentation">?</button>
+
+<script src="script.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", async function () {
+
+        let pendingRequests = [];
+        let approveTargetId = -1;
+
+        // ── Load from API ─────────────────────────────────────────────
+        async function loadRequests() {
+            try {
+                pendingRequests = await apiFetch("/users/pending") || [];
+            } catch (_) {
+                pendingRequests = [];
+            }
+            renderTable();
+        }
+
+        // ── Render table ──────────────────────────────────────────────
+        function renderTable() {
+            const tbody = document.querySelector("#requestsTable tbody");
+            if (!tbody) return;
+
+            const badge = document.getElementById("requestCountBadge");
+            if (pendingRequests.length > 0) {
+                badge.textContent   = `${pendingRequests.length} pending`;
+                badge.style.display = "inline-block";
+            } else {
+                badge.style.display = "none";
+            }
+
+            tbody.innerHTML = "";
+            if (!pendingRequests.length) {
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:#94a3b8;padding:2rem;">No pending requests.</td></tr>`;
+                return;
+            }
+
+            pendingRequests.forEach(req => {
+                const dob         = req.dob ? new Date(req.dob).toLocaleDateString() : "—";
+                const submittedAt = req.requestSubmittedAt ? new Date(req.requestSubmittedAt).toLocaleDateString() : "—";
+
+                tbody.innerHTML += `
+            <tr>
+                <td><span style="font-size:0.68rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 8px;border-radius:4px;color:#fb923c;background:rgba(251,146,60,0.1);border:1px solid rgba(251,146,60,0.25);">Request</span></td>
+                <td style="font-weight:600;color:#e2e8f0;">${req.firstName} ${req.lastName}</td>
+                <td style="font-size:0.82rem;">${req.emailAddress || "—"}</td>
+                <td style="font-size:0.82rem;">${dob}</td>
+                <td><span style="color:#475569;font-size:0.8rem;">—</span></td>
+                <td style="font-size:0.78rem;color:#64748b;max-width:160px;">${req.address || "—"}</td>
+                <td style="font-size:0.78rem;color:#64748b;">${submittedAt}</td>
+                <td><span style="font-size:0.68rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 8px;border-radius:4px;color:#fbbf24;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);">Pending</span></td>
+                <td>
+                    <button onclick="openApproveModal(${req.id}, '${req.firstName} ${req.lastName}')"
+                        data-tooltip="Assign role and password, then approve"
+                        style="background:#047857;padding:5px 12px;font-size:0.78rem;margin:0;">✓ Approve</button>
+                </td>
+                <td>
+                    <button onclick="rejectRequest(${req.id})"
+                        data-tooltip="Permanently remove this request"
+                        style="background:#b91c1c;padding:5px 12px;font-size:0.78rem;margin:0;">✗ Reject</button>
+                </td>
+            </tr>`;
+            });
+        }
+
+        // ── Approve modal ─────────────────────────────────────────────
+        const modal = document.getElementById("approveModal");
+
+        window.openApproveModal = function (id, name) {
+            approveTargetId = id;
+            document.getElementById("approveModalName").textContent = name;
+            document.getElementById("approveRole").value     = "";
+            document.getElementById("approvePassword").value = "";
+            document.getElementById("approveError").style.display = "none";
+            modal.style.display = "flex";
+        };
+
+        document.getElementById("approveCancelBtn").addEventListener("click", () => {
+            modal.style.display = "none";
+        });
+        modal.addEventListener("click", e => { if (e.target === modal) modal.style.display = "none"; });
+
+        document.getElementById("approveConfirmBtn").addEventListener("click", async function () {
+            const role     = document.getElementById("approveRole").value;
+            const password = document.getElementById("approvePassword").value;
+            const errEl    = document.getElementById("approveError");
+
+            if (!role)     { errEl.textContent = "Please select a role.";     errEl.style.display = "block"; return; }
+            if (!password) { errEl.textContent = "Please enter a password.";  errEl.style.display = "block"; return; }
+            errEl.style.display = "none";
+
+            const btn = this;
+            btn.disabled = true; btn.textContent = "Approving…";
+            try {
+                await apiFetch(`/users/approve/${approveTargetId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ Role: role, Password: password })
+                });
+                modal.style.display = "none";
+                await loadRequests();
+            } catch (err) {
+                errEl.textContent   = err.message || "Approval failed. Check password requirements.";
+                errEl.style.display = "block";
+            } finally {
+                btn.disabled = false; btn.textContent = "✓ Approve";
+            }
+        });
+
+        // ── Reject ────────────────────────────────────────────────────
+        window.rejectRequest = async function (id) {
+            if (!confirm("Permanently remove this request?")) return;
+            try {
+                await apiFetch(`/users/reject/${id}`, { method: "DELETE" });
+                await loadRequests();
+            } catch (err) {
+                alert("Failed to reject request: " + (err.message || err));
+            }
+        };
+
+        // ── Init ──────────────────────────────────────────────────────
+        await loadRequests();
+    });
+</script>
+</body>
+</html>

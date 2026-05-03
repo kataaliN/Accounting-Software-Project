@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Request Access — First Class Finance</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body class="login-page">
+
+<!-- Navbar -->
+<header class="navbar">
+    <div class="nav-left">
+        <div class="nav-brand">
+            <img src="Assets/LogoFirstClass.png" class="nav-logo">
+            <span class="site-name">First Class <span>Finance</span></span>
+        </div>
+    </div>
+    <div class="nav-right">
+        <a href="index.html" style="font-size:0.82rem;font-weight:600;color:#60a5fa;text-decoration:none;padding:6px 14px;border:1px solid rgba(96,165,250,0.25);border-radius:6px;transition:background 0.15s;"
+           onmouseover="this.style.background='rgba(96,165,250,0.08)'" onmouseout="this.style.background='transparent'">
+            ← Back to Sign In
+        </a>
+    </div>
+</header>
+
+<main class="container">
+
+    <!-- Left: Info panel -->
+    <section class="cover">
+        <div class="cover-hero">
+            <div class="cover-eyebrow">Access Request</div>
+            <h1>Request System<br><span class="cover-brand">Access</span></h1>
+            <p class="cover-lead">
+                Submit your details below to request access to First Class Finance.
+                Your request will be reviewed by an Administrator before access is granted.
+            </p>
+        </div>
+
+        <div class="cover-divider"></div>
+
+        <div class="features">
+            <h3>What happens next</h3>
+            <ul>
+                <li>Your request is sent to the Administrator for review</li>
+                <li>Admin will approve or reject your request</li>
+                <li>Once approved, you will receive your login credentials</li>
+                <li>You can then sign in and access your role-based dashboard</li>
+            </ul>
+        </div>
+
+        <div class="security">
+            <h3>🔒 Privacy Notice</h3>
+            <p>
+                Your information is used solely for identity verification and
+                system access purposes. It will not be shared with third parties.
+            </p>
+        </div>
+    </section>
+
+    <!-- Right: Request form -->
+    <section class="login-card" style="width:460px;min-width:420px;">
+
+        <!-- Success state (hidden by default) -->
+        <div id="successState" style="display:none;text-align:center;padding:2rem 0;">
+            <div style="font-size:3rem;margin-bottom:1rem;">✅</div>
+            <h2 style="color:#34d399;font-size:1.3rem;margin-bottom:0.5rem;">Request Submitted!</h2>
+            <p style="color:#64748b;font-size:0.875rem;margin-bottom:1.5rem;line-height:1.6;">
+                Your access request has been sent to the Administrator.<br>
+                You will be contacted once it has been reviewed.
+            </p>
+            <a href="index.html"
+               style="display:inline-block;padding:10px 24px;background:linear-gradient(135deg,#047857,#065f46);color:#fff;text-decoration:none;border-radius:7px;font-size:0.875rem;font-weight:700;">
+                Return to Sign In
+            </a>
+        </div>
+
+        <!-- Form state -->
+        <div id="formState">
+            <div class="login-card-top">
+                <div class="login-card-logo">
+                    <img src="Assets/LogoFirstClass.png" class="nav-logo">
+                </div>
+                <h2>Request Access</h2>
+                <p class="login-card-sub">Fill in your details and submit for admin review</p>
+            </div>
+
+            <!-- Error box -->
+            <div id="formErrors" style="display:none;margin-bottom:14px;padding:10px 14px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:7px;">
+                <ul id="formErrorList" style="margin:0;padding-left:16px;color:#f87171;font-size:0.82rem;line-height:1.7;"></ul>
+            </div>
+
+            <form id="requestAccessForm">
+
+                <div style="display:flex;gap:12px;">
+                    <div class="login-field" style="flex:1;">
+                        <label for="reqFirstName">First Name</label>
+                        <input type="text" id="reqFirstName" placeholder="Jane" required>
+                    </div>
+                    <div class="login-field" style="flex:1;">
+                        <label for="reqLastName">Last Name</label>
+                        <input type="text" id="reqLastName" placeholder="Smith" required>
+                    </div>
+                </div>
+
+                <div class="login-field">
+                    <label for="reqEmail">Email Address</label>
+                    <input type="email" id="reqEmail" placeholder="jane.smith@company.com" required>
+                </div>
+
+                <div class="login-field">
+                    <label for="reqDOB">Date of Birth</label>
+                    <input type="date" id="reqDOB" required>
+                </div>
+
+                <div class="login-field">
+                    <label for="reqRole">Requested Role</label>
+                    <select id="reqRole" required>
+                        <option value="">— Select a role —</option>
+                        <option value="Manager">Manager</option>
+                        <option value="Accountant">Accountant</option>
+                    </select>
+                </div>
+
+                <div class="login-field">
+                    <label for="reqReason">Reason for Access <span style="color:#64748b;font-weight:400;font-size:0.7rem;">(optional)</span></label>
+                    <textarea id="reqReason" rows="3" placeholder="Briefly describe why you need access…"
+                              style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:#e2e8f0;font-size:0.875rem;resize:vertical;font-family:'DM Sans',sans-serif;"></textarea>
+                </div>
+
+                <button type="submit" class="login-btn" style="margin-top:0.5rem;">
+                    Submit Request →
+                </button>
+
+            </form>
+
+            <div style="margin-top:1.25rem;text-align:center;">
+                <a href="index.html" style="font-size:0.8rem;color:#475569;text-decoration:none;">
+                    Already have access? <span style="color:#60a5fa;">Sign In</span>
+                </a>
+            </div>
+
+            <div class="login-card-footer">
+                <span>🔒 Your information is secure</span>
+            </div>
+        </div>
+
+    </section>
+</main>
+
+<script>
+    document.getElementById("requestAccessForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const firstName = document.getElementById("reqFirstName").value.trim();
+        const lastName  = document.getElementById("reqLastName").value.trim();
+        const email     = document.getElementById("reqEmail").value.trim();
+        const dob       = document.getElementById("reqDOB").value;
+        const role      = document.getElementById("reqRole").value;
+        const reason    = document.getElementById("reqReason").value.trim();
+
+        // ── Validate ─────────────────────────────────────────────────
+        const errors = [];
+        if (!firstName)          errors.push("First name is required.");
+        if (!lastName)           errors.push("Last name is required.");
+        if (!email)              errors.push("Email address is required.");
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+            errors.push("Please enter a valid email address.");
+        if (!dob)                errors.push("Date of birth is required.");
+        if (!role)               errors.push("Please select a requested role.");
+
+        // Check for duplicate email in existing requests or employees
+        const existing = JSON.parse(localStorage.getItem("accessRequests")) || [];
+        const employees = JSON.parse(localStorage.getItem("employees")) || [];
+        if (existing.some(r => r.email.toLowerCase() === email.toLowerCase()))
+            errors.push("A request with this email already exists.");
+        if (employees.some(emp => emp.email.toLowerCase() === email.toLowerCase()))
+            errors.push("An employee with this email already exists in the system.");
+
+        if (errors.length) {
+            const errBox  = document.getElementById("formErrors");
+            const errList = document.getElementById("formErrorList");
+            errList.innerHTML    = errors.map(e => `<li>${e}</li>`).join("");
+            errBox.style.display = "block";
+            errBox.scrollIntoView({ behavior:"smooth", block:"nearest" });
+            return;
+        }
+
+        document.getElementById("formErrors").style.display = "none";
+
+        // ── Save to accessRequests ────────────────────────────────────
+        const request = {
+            firstName,
+            lastName,
+            email,
+            dob,
+            requestedRole: role,
+            reason,
+            status:        "Pending",
+            submittedAt:   new Date().toISOString(),
+            source:        "public_request"   // distinguishes from admin-invited requests
+        };
+
+        existing.push(request);
+        localStorage.setItem("accessRequests", JSON.stringify(existing));
+
+        // ── Admin notification ────────────────────────────────────────
+        const adminNotifs = JSON.parse(localStorage.getItem("adminNotifications")) || [];
+        adminNotifs.push({
+            type:      "access_request",
+            name:      `${firstName} ${lastName}`,
+            email,
+            role,
+            timestamp: new Date().toISOString(),
+            read:      false
+        });
+        localStorage.setItem("adminNotifications", JSON.stringify(adminNotifs));
+
+        // ── Show success ──────────────────────────────────────────────
+        document.getElementById("formState").style.display    = "none";
+        document.getElementById("successState").style.display = "block";
+    });
+
+    // Clear errors on input change
+    ["reqFirstName","reqLastName","reqEmail","reqDOB","reqRole"].forEach(id => {
+        document.getElementById(id)?.addEventListener("input", () => {
+            document.getElementById("formErrors").style.display = "none";
+        });
+    });
+</script>
+</body>
+</html>

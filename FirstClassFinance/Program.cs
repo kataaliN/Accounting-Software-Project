@@ -85,7 +85,10 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDBContext>();
-    context.Database.EnsureCreated(); // Ensure the DB and schema are created if they don't exist
+    
+    // Ensure the DB and schema are created if they don't exist
+    // automatically apply any pending migrations & update schema
+    context.Database.Migrate();
 
     var adminUser = context.Users.FirstOrDefault(u => u.EmployeeUsername == "admin");
     if (adminUser == null)
